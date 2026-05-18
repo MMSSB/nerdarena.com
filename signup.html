@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nerd Arena | Create Account</title>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="auth.css">
+</head>
+<body>
+
+    <div class="auth-wrapper">
+        <div class="auth-form-section animate-fade-in">
+            <div class="auth-container">
+                <div class="auth-logo">
+                    <i class="ph-fill ph-code"></i> <span>Nerd Arena</span>
+                </div>
+                
+                <h1 class="auth-title">Create an account</h1>
+                <p class="auth-subtitle">To continue, fill out your nerd info.</p>
+
+                <form class="auth-form" id="signup-form">
+                    <div class="input-group">
+                        <label>Full name *</label>
+                        <input type="text" id="fullname" placeholder="Name Surname" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Username *</label>
+                        <input type="text" id="username" placeholder="tech_wizard42" oninput="this.value = this.value.toLowerCase().replace(/\s+/g, '')" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label>E-mail *</label>
+                        <input type="email" id="email" placeholder="email@example.com" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Password *</label>
+                        <input type="password" id="password" placeholder="••••••••" required minlength="6">
+                    </div>
+                    
+                    <p class="error-msg" id="signup-error"></p>
+
+                    <button type="submit" class="btn-auth">Sign up</button>
+                </form>
+
+                <div class="auth-links">
+                    Already have an account? <a href="login.html">Log in</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="auth-image-section animate-fade-in" style="animation-delay: 0.2s;">
+            <div class="auth-image-content">
+                <h2>Join the Arena</h2>
+                <p>Connect with top developers, pitch your architecture, and build the future of tech together.</p>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="auth.js"></script>
+</body>
+</html>
