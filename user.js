@@ -1,9 +1,10 @@
 // user.js
 import { auth, db } from './firebase.js';
-import { doc, collection, query, where, orderBy, onSnapshot, updateDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+import { doc, getDoc, collection, query, where, onSnapshot, updateDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
 const urlParams = new URLSearchParams(window.location.search);
 const targetUserId = urlParams.get('id');
+let targetUserData = null; // Save their profile globally
 
 document.addEventListener('userDataLoaded', () => {
     if (!targetUserId) return window.location.replace("index.html");
@@ -15,7 +16,6 @@ document.addEventListener('userDataLoaded', () => {
     loadTargetNetwork(targetUserId);
 });
 
-// --- FORMATTING ENGINE ---
 function formatContent(text) {
     let safe = text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
     safe = safe.replace(/```([\s\S]*?)```/g, '<div class="code-block"><pre><code>$1</code></pre></div>');
@@ -26,15 +26,12 @@ function formatContent(text) {
     return safe.replace(/\n/g, '<br>');
 }
 
-// --- PROFILE TABS LOGIC ---
 function setupTabs() {
     document.querySelectorAll('.tab-item').forEach((tab, index) => {
         tab.addEventListener('click', () => {
             document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.profile-tab-content').forEach(c => c.classList.remove('active'));
-            
             tab.classList.add('active');
-            
             if(index === 0) document.getElementById('tab-pitches').classList.add('active');
             if(index === 1) document.getElementById('tab-architecture').classList.add('active');
             if(index === 2) document.getElementById('tab-repositories').classList.add('active');
@@ -47,50 +44,41 @@ function setupTabs() {
 function loadTargetProfile(uid) {
     onSnapshot(doc(db, "users", uid), (userDoc) => {
         if (userDoc.exists()) {
-            const data = userDoc.data();
+            targetUserData = userDoc.data();
+            const data = targetUserData;
+            
             const initials = data.fullname ? data.fullname.substring(0, 2).toUpperCase() : 'NA';
             const followers = data.followers || [];
             const isFollowing = followers.includes(auth.currentUser.uid);
             
-            // Render Target Avatar safely
             const profileAvatar = document.querySelector('.profile-avatar');
-            const avatarVal = data.avatarClass || 'bg-primary';
-            if (avatarVal.includes('url(')) {
-                profileAvatar.className = 'profile-avatar';
-                profileAvatar.style.background = avatarVal;
+            if (data.avatarClass && data.avatarClass.includes('url(')) {
+                profileAvatar.style.background = data.avatarClass;
                 profileAvatar.style.backgroundSize = 'cover';
                 profileAvatar.style.backgroundPosition = 'center';
                 profileAvatar.innerText = '';
             } else {
-                profileAvatar.className = `profile-avatar ${avatarVal}`;
+                profileAvatar.className = `profile-avatar ${data.avatarClass || 'bg-primary'}`;
                 profileAvatar.style.background = '';
                 profileAvatar.innerText = initials;
             }
 
-            // Render Info & Stats
             document.querySelector('.name-stats h2').innerText = `${data.fullname} (@${data.username})`;
             document.querySelector('.user-stats').innerHTML = `<i class="ph-bold ph-users-three"></i> ${followers.length} Backers`;
             
-            // Render Bio & GitHub
             document.getElementById('dev-bio').innerText = data.bio || "This developer hasn't added a bio yet.";
             const ghBtn = document.getElementById('dev-github-btn');
             if (data.github) {
                 ghBtn.style.display = 'flex';
-                // Strip URL if user pasted the whole link, just keep the handle/domain
                 ghBtn.onclick = () => window.open(`https://github.com/${data.github.replace('github.com/', '').replace('https://', '')}`, '_blank');
-            } else {
-                ghBtn.style.display = 'none';
-            }
+            } else { ghBtn.style.display = 'none'; }
 
-            // Render Target Cover
             if (data.coverStyle) {
-                const cover = document.querySelector('.cover-banner');
-                cover.style.background = data.coverStyle;
-                cover.style.backgroundSize = 'cover';
-                cover.style.backgroundPosition = 'center';
+                document.querySelector('.cover-banner').style.background = data.coverStyle;
+                document.querySelector('.cover-banner').style.backgroundSize = 'cover';
+                document.querySelector('.cover-banner').style.backgroundPosition = 'center';
             }
 
-            // Follow Button Logic
             const followBtn = document.getElementById('follow-btn');
             if (followBtn) {
                 followBtn.innerHTML = isFollowing ? `<i class="ri-user-unfollow-line"></i> Unfollow` : `<i class="ri-user-add-line"></i> Follow Nerd`;
@@ -98,90 +86,68 @@ function loadTargetProfile(uid) {
                 
                 const newFollowBtn = followBtn.cloneNode(true);
                 followBtn.parentNode.replaceChild(newFollowBtn, followBtn);
-                
                 newFollowBtn.addEventListener('click', async () => {
                     newFollowBtn.disabled = true;
-                    const userRef = doc(db, "users", uid);
-                    if (isFollowing) {
-                        await updateDoc(userRef, { followers: arrayRemove(auth.currentUser.uid) });
-                    } else {
-                        await updateDoc(userRef, { followers: arrayUnion(auth.currentUser.uid) });
-                    }
+                    if (isFollowing) await updateDoc(doc(db, "users", uid), { followers: arrayRemove(auth.currentUser.uid) });
+                    else await updateDoc(doc(db, "users", uid), { followers: arrayUnion(auth.currentUser.uid) });
                 });
             }
-        } else {
-            document.querySelector('.name-stats h2').innerText = "Dev Not Found";
+            
+            // Re-render posts with fresh data if they exist
+            document.querySelectorAll(`[data-author="${uid}"]`).forEach(postEl => {
+                renderDynamicAuthor(targetUserData, postEl.getAttribute('data-postid'));
+            });
         }
     });
 }
 
-// --- LOAD NETWORK (FOLLOWERS) ---
 function loadTargetNetwork(uid) {
     const networkContainer = document.getElementById('network-container');
-    const q = query(collection(db, "users")); 
-    
-    onSnapshot(q, (snapshot) => {
+    onSnapshot(query(collection(db, "users")), (snapshot) => {
         networkContainer.innerHTML = '';
         let hasFollowers = false;
-
         snapshot.forEach((docSnap) => {
             const user = docSnap.data();
-            // Show users who have this person's ID in their followers array
             if (user.uid !== uid && user.followers && user.followers.includes(uid)) {
                 hasFollowers = true;
                 const card = document.createElement('div');
                 card.className = 'network-card';
                 card.onclick = () => window.location.href = `user.html?id=${user.uid}`;
-                
                 let avatarHTML = user.avatarClass?.includes('url(') 
-                    ? `<div class="avatar-text" style="background:${user.avatarClass}; background-size:cover;"></div>`
+                    ? `<div class="avatar-text" style="background:${user.avatarClass}; background-size:cover; background-position:center;"></div>`
                     : `<div class="avatar-text ${user.avatarClass || 'bg-blue'}">${user.fullname.substring(0,2).toUpperCase()}</div>`;
-
-                card.innerHTML = `
-                    ${avatarHTML}
-                    <div>
-                        <strong style="display:block; font-size:0.95rem; color:var(--text-main);">${user.fullname}</strong>
-                        <span style="font-size:0.8rem; color:var(--text-muted);">@${user.username}</span>
-                    </div>
-                `;
+                card.innerHTML = `${avatarHTML}<div><strong style="display:block; font-size:0.95rem; color:var(--text-main);">${user.fullname}</strong><span style="font-size:0.8rem; color:var(--text-muted);">@${user.username}</span></div>`;
                 networkContainer.appendChild(card);
             }
         });
-
         if (!hasFollowers) networkContainer.innerHTML = '<p style="color:var(--text-muted); grid-column:1/-1;">No backers yet.</p>';
     });
 }
 
 function loadTargetPosts(uid) {
     const feedContainer = document.getElementById('target-posts-container');
-    const q = query(collection(db, "posts"), where("authorId", "==", uid), orderBy("timestamp", "desc"));
-
-    onSnapshot(q, (snapshot) => {
+    onSnapshot(query(collection(db, "posts"), where("authorId", "==", uid)), (snapshot) => {
         feedContainer.innerHTML = ''; 
-        if (snapshot.empty) {
+        let postsArray = [];
+        snapshot.forEach(docSnap => postsArray.push({ id: docSnap.id, ...docSnap.data() }));
+        postsArray.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+        if (postsArray.length === 0) {
             feedContainer.innerHTML = `<p style="text-align:center; color:var(--text-muted); margin-top:20px; padding: 30px;">No architectures pitched yet.</p>`;
             return;
         }
 
-        snapshot.forEach((docSnap) => {
-            const post = docSnap.data();
-            const postId = docSnap.id;
-            const initials = post.authorName ? post.authorName.substring(0, 2).toUpperCase() : 'NA';
-            
+        postsArray.forEach((post) => {
+            const postId = post.id;
             const isLikedByMe = post.likedBy && post.likedBy.includes(auth.currentUser.uid);
-            const likeClass = isLikedByMe ? "" : "unliked";
-            const likeIcon = isLikedByMe ? "ph-fill ph-rocket" : "ph ph-rocket";
-            const likesCount = post.likedBy ? post.likedBy.length : 0;
-            
             const commentsList = post.comments || [];
             let commentsHTML = commentsList.map(c => `<div class="comment-item"><strong>${c.author}:</strong> ${c.text}</div>`).join('');
 
-            // 3-Dots Menu (Only Report & Share since it's someone else's profile)
             const dropdownHTML = `
                 <div class="post-options-container">
                     <button class="btn-more toggle-menu-btn" data-id="${postId}"><i class="ri-more-fill"></i></button>
                     <div class="post-dropdown-menu" id="menu-${postId}">
-                        <a onclick="sharePost('${postId}')"><i class="ri-share-forward-line"></i> Share Idea</a>
+                        <a class="share-post-btn" data-id="${postId}"><i class="ri-share-forward-line"></i> Share Idea</a>
                         <a class="report-post-btn text-danger" onclick="alert('Post reported to moderators.')"><i class="ri-flag-line"></i> Report Post</a>
                     </div>
                 </div>
@@ -189,18 +155,21 @@ function loadTargetPosts(uid) {
 
             const postElement = document.createElement('div');
             postElement.className = 'card post animate-fade-in';
+            postElement.setAttribute('data-author', post.authorId);
+            postElement.setAttribute('data-postid', postId);
+            
             postElement.innerHTML = `
                 <div class="post-header">
                     <div class="post-author">
-                        <div class="avatar-text target-post-avatar"></div>
-                        <div class="author-info"><strong>${post.authorName}</strong></div>
+                        <div class="avatar-text" id="dyn-avatar-${postId}"></div>
+                        <div class="author-info"><strong id="dyn-name-${postId}">Loading...</strong></div>
                     </div>
                     ${dropdownHTML}
                 </div>
-                <div class="post-content" style="font-size: 1.05rem; line-height: 1.6;"><p>${formatContent(post.content)}</p></div>
+                <div class="post-content"><p>${formatContent(post.content)}</p></div>
                 <div class="post-footer">
-                    <div class="likes ${likeClass}" data-id="${postId}" data-liked="${isLikedByMe}">
-                        <i class="${likeIcon}"></i> Upvote <span>${likesCount}</span>
+                    <div class="likes ${isLikedByMe ? '' : 'unliked'}" data-id="${postId}" data-liked="${isLikedByMe}">
+                        <i class="${isLikedByMe ? 'ph-fill' : 'ph'} ph-rocket"></i> Upvote <span>${post.likedBy ? post.likedBy.length : 0}</span>
                     </div>
                     <div class="comments-shares toggle-comments-btn" data-id="${postId}">
                         <span><i class="ri-chat-3-line"></i> Discuss <span>${commentsList.length}</span></span>
@@ -216,26 +185,34 @@ function loadTargetPosts(uid) {
                 </div>
             `;
             
-            const targetAvatar = postElement.querySelector('.target-post-avatar');
-            const avatarVal = post.authorAvatarClass || 'bg-purple';
-            if (avatarVal.includes('url(')) {
-                targetAvatar.style.background = avatarVal;
-                targetAvatar.style.backgroundSize = 'cover';
-                targetAvatar.style.backgroundPosition = 'center';
-            } else {
-                targetAvatar.className = `avatar-text ${avatarVal}`;
-                targetAvatar.innerText = initials;
-            }
-
             feedContainer.appendChild(postElement);
+            if (targetUserData) renderDynamicAuthor(targetUserData, postId);
         });
 
         attachPostListeners();
     });
 }
 
+function renderDynamicAuthor(userData, postId) {
+    const nameEl = document.getElementById(`dyn-name-${postId}`);
+    const avatarEl = document.getElementById(`dyn-avatar-${postId}`);
+    if (!nameEl || !avatarEl || !userData) return;
+
+    nameEl.innerText = userData.fullname;
+    if (userData.avatarClass && userData.avatarClass.includes('url(')) {
+        avatarEl.style.background = userData.avatarClass;
+        avatarEl.style.backgroundSize = 'cover';
+        avatarEl.style.backgroundPosition = 'center';
+        avatarEl.className = 'avatar-text';
+        avatarEl.innerText = '';
+    } else {
+        avatarEl.className = `avatar-text ${userData.avatarClass || 'bg-primary'}`;
+        avatarEl.style.background = '';
+        avatarEl.innerText = userData.fullname.substring(0, 2).toUpperCase();
+    }
+}
+
 function attachPostListeners() {
-    // 3-Dots Dropdown
     document.querySelectorAll('.toggle-menu-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -246,26 +223,33 @@ function attachPostListeners() {
         });
     });
 
-    document.addEventListener('click', () => {
-        document.querySelectorAll('.post-dropdown-menu').forEach(m => m.classList.remove('show'));
+    document.addEventListener('click', () => document.querySelectorAll('.post-dropdown-menu').forEach(m => m.classList.remove('show')));
+
+    document.querySelectorAll('.share-post-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const id = e.currentTarget.getAttribute('data-id');
+            const shareUrl = `${window.location.origin}/post.html?id=${id}`;
+            try {
+                if (navigator.share) await navigator.share({ title: 'Nerd Arena Pitch', url: shareUrl });
+                else { await navigator.clipboard.writeText(shareUrl); alert("Link copied to clipboard!"); }
+            } catch (err) {}
+            document.querySelectorAll('.post-dropdown-menu').forEach(m => m.classList.remove('show'));
+        });
     });
 
-    // Likes
     document.querySelectorAll('.likes').forEach(btn => {
         btn.addEventListener('click', async (e) => {
             const id = e.currentTarget.getAttribute('data-id');
             const isLiked = e.currentTarget.getAttribute('data-liked') === 'true';
-            const postRef = doc(db, "posts", id);
-            if (isLiked) await updateDoc(postRef, { likedBy: arrayRemove(auth.currentUser.uid) });
-            else await updateDoc(postRef, { likedBy: arrayUnion(auth.currentUser.uid) });
+            if (isLiked) await updateDoc(doc(db, "posts", id), { likedBy: arrayRemove(auth.currentUser.uid) });
+            else await updateDoc(doc(db, "posts", id), { likedBy: arrayUnion(auth.currentUser.uid) });
         });
     });
 
-    // Comments Listeners
     document.querySelectorAll('.toggle-comments-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
-            const id = e.currentTarget.getAttribute('data-id');
-            const section = document.getElementById(`comments-${id}`);
+            const section = document.getElementById(`comments-${e.currentTarget.getAttribute('data-id')}`);
             section.style.display = section.style.display === 'none' ? 'block' : 'none';
         });
     });
@@ -275,14 +259,7 @@ function attachPostListeners() {
             const id = e.currentTarget.getAttribute('data-id');
             const input = document.getElementById(`comment-input-${id}`);
             if(!input.value.trim()) return;
-            
-            await updateDoc(doc(db, "posts", id), {
-                comments: arrayUnion({
-                    author: window.currentUserData.fullname,
-                    text: input.value.trim(),
-                    uid: auth.currentUser.uid
-                })
-            });
+            await updateDoc(doc(db, "posts", id), { comments: arrayUnion({ author: window.currentUserData.fullname, text: input.value.trim(), uid: auth.currentUser.uid }) });
             input.value = '';
         });
     });

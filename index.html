@@ -9,19 +9,17 @@
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <link rel="stylesheet" href="style.css">
     <script src="theme.js"></script>
-    <script type="module" src="gdrive.js"></script>
-
 </head>
 <body>
 
     <header class="top-header">
-        <div class="logo">
-            <i class="ph-fill ph-code"></i> <span>Nerd Arena</span>
-        </div>
+         <a href="index.html"><div class="logo"><i class="ph-fill ph-code"></i> <span>Nerd Arena</span></div></a>
+
         <div class="search-container">
             <span class="search-icon"><i class="ph ph-magnifying-glass"></i></span>
             <input type="text" placeholder="Search ideas, tech stacks, or nerds...">
         </div>
+        
         <div class="header-actions">
             <button class="icon-btn show-mobile-only"><i class="ph ph-magnifying-glass"></i></button>
             <button class="icon-btn hide-mobile"><i class="ri-message-3-line"></i></button>
@@ -31,7 +29,7 @@
                 <div class="avatar-text bg-primary" id="nav-avatar">...</div>
                 <div class="dropdown-menu" id="nav-dropdown">
                     <a href="profile.html"><i class="ri-user-line"></i> My Profile</a>
-                    <a href="settings-account.html"><i class="ri-settings-4-line"></i> Settings</a>
+                    <a href="settings.html"><i class="ri-settings-4-line"></i> Settings</a>
                     <div class="dropdown-divider"></div>
                     <a href="#" id="logout-btn" class="text-danger"><i class="ri-logout-box-r-line"></i> Log Out</a>
                 </div>
@@ -40,16 +38,36 @@
     </header>
 
     <main class="app-layout">
+        
         <aside class="sidebar-nav">
+            
             <ul class="nav-menu">
-                <li class="active"><i class="ph ph-terminal-window icon"></i> Arena Feed</li>
-                <li><i class="ph ph-lightbulb icon"></i> My Ideas</li>
-                <li><i class="ph ph-rocket-launch icon"></i> Shipped Projects</li>
+                <li class="active" onclick="window.location.href='index.html'"><i class="ri-home-5-fill icon"></i> Home</li>
+                <li onclick="window.location.href='profile.html'"><i class="ri-user-smile-line icon"></i> Profile</li>
             </ul>
-            <h4 class="section-title">My Workspaces</h4>
+
+            <h4 class="section-title">Favorites</h4>
             <ul class="nav-menu">
-                <li><i class="ri-folder-code-line icon"></i> Coffee200 Web</li>
-                <li><i class="ri-server-line icon"></i> Local LLM Wrapper</li>
+                <li><i class="ri-message-3-line icon"></i> Messages</li>
+                <li><i class="ri-group-line icon"></i> Friends</li>
+                <li><i class="ri-terminal-box-line icon"></i> Feed</li>
+                <li><i class="ri-bookmark-line icon"></i> Saved Pitches</li>
+                <li><i class="ri-calendar-event-line icon"></i> Events</li>
+            </ul>
+
+            <h4 class="section-title">Groups & Workspaces</h4>
+            <ul class="nav-menu">
+                <!-- <li><img src="https://api.dicebear.com/7.x/bottts/svg?seed=coffee&backgroundColor=fef3c7" alt="group"> Coffee200 Web</li>
+                <li><img src="https://api.dicebear.com/7.x/bottts/svg?seed=llm&backgroundColor=d1fae5" alt="group"> Local LLM Wrapper</li>
+                <li><img src="https://api.dicebear.com/7.x/bottts/svg?seed=react&backgroundColor=e0e7ff" alt="group"> React Egypt</li>
+                <li><img src="https://api.dicebear.com/7.x/bottts/svg?seed=cyber&backgroundColor=fce7f3" alt="group"> CyberSec Daily</li> -->
+            </ul>
+
+            <div style="flex-grow: 1;"></div> 
+
+            <ul class="nav-menu" style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 10px;">
+                <li><i class="ri-question-line icon"></i> Help & Support</li>
+                <li onclick="window.location.href='settings.html'"><i class="ri-settings-4-line icon"></i> Settings</li>
             </ul>
         </aside>
 
@@ -57,7 +75,7 @@
             <div class="card create-post animate-fade-in">
                 <div class="post-input-wrapper">
                     <div class="avatar-text bg-primary">...</div>
-                    <textarea placeholder="post your idea, architecture, or project roadmap..." rows="2"></textarea>
+                    <textarea placeholder="Post your idea, architecture, or project roadmap..." rows="2"></textarea>
                 </div>
                 <div class="post-actions">
                     <div class="action-icons">
@@ -70,23 +88,41 @@
             </section>
 
         <aside class="sidebar-widgets">
+            
             <div class="card widget animate-fade-in">
                 <h3>🔥 Trending Ideas</h3>
                 <ul class="trending-list">
-                    <li><div class="trend-info"><strong>Local LLM wrapper in Electron</strong><span>1,204 upvotes</span></div></li>
+                    <li><div class="trend-info"><strong>Loading trends...</strong><span></span></div></li>
                 </ul>
             </div>
+
+            <div class="card widget animate-fade-in" style="animation-delay: 0.2s;">
+                <h3 style="font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px;">Sponsored</h3>
+                
+                <div class="ad-container" onclick="window.open('index', '_blank')">
+                    <img src="images/cof.png" alt="Ad">
+                    <strong style="display: block; font-size: 0.95rem; color: var(--text-main); margin-bottom: 4px;">Coffee.com</strong>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.4;">.</p>
+                    <span style="font-size: 0.75rem; color: var(--primary-color); font-weight: 700; margin-top: 8px; display: inline-block;">.</span>
+                </div>
+            </div>
+
+            <!-- <div class="mini-footer animate-fade-in" style="animation-delay: 0.3s;">
+                Nerd Arena © 2024 • Privacy • Terms • Ads
+            </div> -->
+
         </aside>
     </main>
 
     <nav class="bottom-nav animate-fade-in">
         <a href="index.html" class="active"><i class="ph-fill ph-terminal-window"></i></a>
-        <a href="#"><i class="ph ph-magnifying-glass"></i></a>
-        <a href="#" class="nav-center-btn" onclick="document.querySelector('.create-post textarea').focus();"><i class="ph-fill ph-plus"></i></a>
+        <a href="search.html"><i class="ph ph-magnifying-glass"></i></a>
+        <a href="#" class="nav-center-btn" onclick="document.querySelector('.create-post textarea').focus();"><i class="ph ph-plus"></i></a>
         <a href="#"><i class="ri-notification-3-line"></i></a>
         <a href="profile.html"><i class="ph ph-user"></i></a>
     </nav>
 
+    <script type="module" src="gdrive.js"></script>
     <script type="module" src="pload.js"></script>
     <script type="module" src="app.js"></script>
 </body>

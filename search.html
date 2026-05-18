@@ -6,13 +6,15 @@
     <title>Search Arena | Nerd Arena</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+        <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
     <script src="theme.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <header class="top-header">
-        <div class="logo"><i class="ph-fill ph-code"></i> <span>Nerd Arena</span></div>
+        <a href="index.html"><div class="logo"><i class="ph-fill ph-code"></i> <span>Nerd Arena</span></div></a>
         <div class="search-container">
             <span class="search-icon"><i class="ph ph-magnifying-glass"></i></span>
             <input type="text" placeholder="Search ideas, tech stacks, or nerds...">
@@ -34,11 +36,17 @@
     <main class="profile-scroll-wrapper">
         <div class="profile-container" style="max-width: 800px;">
             
-            <div class="card animate-fade-in" style="padding: 30px; text-align: center; margin-bottom: 20px; background: linear-gradient(135deg, var(--card-bg), var(--bg-color));">
-                <i class="ri-search-eye-line" style="font-size: 3rem; color: var(--primary-color);"></i>
-                <h2 style="margin-top: 10px; font-size: 1.8rem;">Search Results</h2>
-                <p style="color: var(--text-muted); font-size: 1.1rem;">for <span id="search-query-display" style="font-weight: 700; color: var(--text-main);">"..."</span></p>
+            <div class="card animate-fade-in" style="padding: 15px; margin-bottom: 20px;">
+                <div style="display: flex; gap: 10px;">
+                    <div style="flex: 1; position: relative;">
+                        <i class="ri-search-line" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 1.2rem;"></i>
+                        <input type="text" id="page-search-input" placeholder="Search ideas, nerds, or stacks..." style="width: 100%; padding: 14px 20px 14px 45px; border-radius: 12px; border: 2px solid var(--border-color); background: var(--bg-color); color: var(--text-main); font-size: 1rem; outline: none; transition: 0.2s;" onfocus="this.style.borderColor='var(--primary-color)'" onblur="this.style.borderColor='var(--border-color)'">
+                    </div>
+                    <button id="page-search-btn" style="background: var(--primary-color); color: white; border: none; padding: 0 20px; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.2s; font-size: 0.95rem;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'"><i class="ph ph-magnifying-glass"></i></button>
+                </div>
             </div>
+
+            <h3 class="animate-fade-in" style="margin-bottom: 15px; font-size: 1rem; color: var(--text-muted);">Results for <span id="search-query-display" style="color: var(--text-main); font-weight: 700;">"..."</span></h3>
             
             <div class="search-tabs animate-fade-in" style="animation-delay: 0.1s;">
                 <div class="search-tab active" id="tab-btn-posts" onclick="switchSearchTab('posts')"><i class="ri-terminal-box-line"></i> Pitches & Ideas</div>

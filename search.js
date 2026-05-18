@@ -7,17 +7,34 @@ const queryParam = urlParams.get('q') ? urlParams.get('q').toLowerCase() : '';
 
 document.addEventListener('userDataLoaded', () => {
     const display = document.getElementById('search-query-display');
+    const pageInput = document.getElementById('page-search-input');
+    
+    // Wire up the new On-Page Search Bar
+    if (pageInput) {
+        if (urlParams.get('q')) pageInput.value = urlParams.get('q'); // Auto-fill the bar
+        
+        const executeSearch = () => {
+            const val = pageInput.value.trim();
+            if (val) window.location.href = `search.html?q=${encodeURIComponent(val)}`;
+        };
+        
+        document.getElementById('page-search-btn').addEventListener('click', executeSearch);
+        pageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') executeSearch();
+        });
+    }
+
     if (queryParam) {
         display.innerText = `"${urlParams.get('q')}"`;
         performAdvancedSearch(queryParam);
     } else {
         display.innerText = "Everything";
-        document.getElementById('search-results-posts').innerHTML = "<p style='text-align:center; padding:20px;'>Type something in the search bar above.</p>";
+        document.getElementById('search-results-posts').innerHTML = "<p style='text-align:center; padding:20px; color:var(--text-muted);'>Type something in the search bar above.</p>";
         document.getElementById('people-grid-container').innerHTML = "";
     }
 });
 
-// Rich Text Formatter (Copied from app.js)
+// Rich Text Formatter
 function formatContent(text) {
     let safe = text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
     safe = safe.replace(/```([\s\S]*?)```/g, '<div class="code-block"><pre><code>$1</code></pre></div>');
@@ -31,7 +48,7 @@ async function performAdvancedSearch(searchTerm) {
     const peopleContainer = document.getElementById('people-grid-container');
 
     try {
-        // 1. ADVANCED USER SEARCH (Checks Name, Username, and Bio)
+        // 1. ADVANCED USER SEARCH
         const usersSnap = await getDocs(collection(db, "users"));
         peopleContainer.innerHTML = '';
         let foundUsers = 0;
@@ -63,12 +80,11 @@ async function performAdvancedSearch(searchTerm) {
         });
         if (foundUsers === 0) peopleContainer.innerHTML = "<div style='grid-column: 1/-1; text-align:center; padding: 30px; color: var(--text-muted);'>No developers found.</div>";
 
-        // 2. ADVANCED POST SEARCH (Checks Author and Content)
+        // 2. ADVANCED POST SEARCH
         const postsSnap = await getDocs(collection(db, "posts"));
         postsContainer.innerHTML = '';
         let foundPosts = 0;
 
-        // Collect and sort by most recent
         let matchedPosts = [];
         postsSnap.forEach(docSnap => {
             const post = docSnap.data();
@@ -85,7 +101,7 @@ async function performAdvancedSearch(searchTerm) {
             const el = document.createElement('div');
             el.className = 'card post animate-fade-in';
             el.style.cursor = "pointer";
-            el.onclick = () => window.location.href = `post.html?id=${post.id}`; // Click anywhere to view post
+            el.onclick = () => window.location.href = `post.html?id=${post.id}`; 
             
             el.innerHTML = `
                 <div class="post-header" style="margin-bottom: 5px;">
