@@ -5,26 +5,69 @@ import {
     signInWithEmailAndPassword,
     onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-import { doc, setDoc, getDocs, updateDoc, collection, query, where } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+import { doc, setDoc, getDoc, getDocs, updateDoc, collection, query, where } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+// Global Lock: Prevents the page from redirecting while we are saving to Firestore
+window.isAuthenticating = false;
 
 // ==========================================
-// 1. PAGE LOAD CHECK
+// 1. PAGE LOAD CHECK & RECENT LOGIN UI
 // ==========================================
-// Only redirect if they load the page and are ALREADY logged in.
 onAuthStateChanged(auth, (user) => {
+    // If we are actively processing a form, DO NOT redirect yet. Let the form finish its tasks.
+    if (window.isAuthenticating) return;
+
     const isAuthPage = window.location.pathname.includes('login.html') || window.location.pathname.includes('signup.html');
     if (user && isAuthPage) {
         window.location.replace("index.html");
     }
 });
 
+// Display "Recent Login" from Local Storage
+document.addEventListener('DOMContentLoaded', () => {
+    const recentLoginContainer = document.getElementById('recent-login-container');
+    if (recentLoginContainer) {
+        const lastLoginData = localStorage.getItem('na_last_login');
+        
+        if (lastLoginData) {
+            const user = JSON.parse(lastLoginData);
+            const avatarDiv = document.getElementById('recent-login-avatar');
+            
+            // Format the Avatar
+            if (user.avatarClass && user.avatarClass.includes('url(')) {
+                avatarDiv.className = 'avatar-text';
+                avatarDiv.style.background = user.avatarClass;
+                avatarDiv.style.backgroundSize = 'cover';
+                avatarDiv.style.backgroundPosition = 'center';
+                avatarDiv.innerText = '';
+            } else {
+                avatarDiv.className = `avatar-text ${user.avatarClass || 'bg-primary'}`;
+                avatarDiv.innerText = user.fullname ? user.fullname.substring(0, 2).toUpperCase() : 'NA';
+            }
+
+            // Set the Name and Show the Card
+            document.getElementById('recent-login-name').innerText = user.fullname || user.username;
+            recentLoginContainer.style.display = 'block';
+
+            // Auto-fill form when the card is clicked
+            document.getElementById('recent-login-card').addEventListener('click', () => {
+                document.getElementById('login-identifier').value = user.username || user.email;
+                document.getElementById('login-password').focus(); // Focus password automatically
+            });
+        }
+    }
+});
+
 // ==========================================
-// 2. SIGNUP (One Collection Method)
+// 2. SIGNUP (FIXED DATABASE SAVE)
 // ==========================================
 const signupForm = document.getElementById('signup-form');
 if (signupForm) {
     signupForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+        
+        // Lock the redirect listener
+        window.isAuthenticating = true; 
         
         const fullname = document.getElementById('fullname').value.trim();
         const username = document.getElementById('username').value.toLowerCase().replace(/\s+/g, ''); 
@@ -33,36 +76,44 @@ if (signupForm) {
         const errorMsg = document.getElementById('signup-error');
         const submitBtn = signupForm.querySelector('.btn-auth');
 
-        submitBtn.innerText = "Processing...";
+        submitBtn.innerText = "Building Workspace...";
         submitBtn.disabled = true;
         errorMsg.style.display = "none";
 
         try {
-            // STEP 1: Search the 'users' collection to see if this username is taken
+            // STEP 1: Check username availability
             const usersRef = collection(db, "users");
             const q = query(usersRef, where("username", "==", username));
             const querySnapshot = await getDocs(q);
             
             if (!querySnapshot.empty) {
-                throw new Error("username-taken"); // It found a match!
+                throw new Error("username-taken"); 
             }
 
             // STEP 2: Create Auth Account
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
 
-            // STEP 3: Save everything to ONE document in the 'users' collection
-            await setDoc(doc(db, "users", user.uid), {
+            // STEP 3: Save to Firestore WITH default arrays to prevent crashes
+            const userData = {
                 uid: user.uid,
                 fullname: fullname,
-                username: username, // Saved right here!
+                username: username,
                 email: email,
-                followersCount: 0,
-                shippedProjectsCount: 0,
+                avatarClass: 'bg-primary',
+                coverStyle: 'linear-gradient(135deg, #1e1b4b, #312e81)',
+                followers: [],
+                savedAvatars: [],
+                savedCovers: [],
                 createdAt: new Date().toISOString()
-            });
+            };
 
-            // STEP 4: Manually redirect ONLY when database save is 100% finished
+            await setDoc(doc(db, "users", user.uid), userData);
+
+            // STEP 4: Save to Local Storage so "Recent Login" works next time
+            localStorage.setItem('na_last_login', JSON.stringify(userData));
+
+            // STEP 5: Safe to redirect now
             window.location.href = "index.html";
 
         } catch (error) {
@@ -77,17 +128,20 @@ if (signupForm) {
             
             submitBtn.innerText = "Sign up";
             submitBtn.disabled = false;
+            window.isAuthenticating = false; // Unlock on error
         }
     });
 }
 
 // ==========================================
-// 3. SMART LOGIN (Search 'users' for username)
+// 3. SMART LOGIN 
 // ==========================================
 const loginForm = document.getElementById('login-form');
 if (loginForm) {
     loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+        
+        window.isAuthenticating = true; // Lock the redirect listener
         
         let loginIdentifier = document.getElementById('login-identifier').value.toLowerCase().replace(/\s+/g, '');
         const password = document.getElementById('login-password').value;
@@ -101,14 +155,13 @@ if (loginForm) {
         try {
             let emailToLogin = loginIdentifier;
 
-            // If it's a username (no '@' symbol), search the 'users' collection for it
+            // Username Login Check
             if (!loginIdentifier.includes('@')) {
                 const usersRef = collection(db, "users");
                 const q = query(usersRef, where("username", "==", loginIdentifier));
                 const querySnapshot = await getDocs(q);
 
                 if (!querySnapshot.empty) {
-                    // We found the user! Grab their email from the document.
                     const userData = querySnapshot.docs[0].data();
                     emailToLogin = userData.email;
                 } else {
@@ -116,10 +169,16 @@ if (loginForm) {
                 }
             }
 
-            // Login with the found email
-            await signInWithEmailAndPassword(auth, emailToLogin, password);
+            // Login
+            const userCredential = await signInWithEmailAndPassword(auth, emailToLogin, password);
             
-            // Redirect after successful login
+            // Fetch their full profile to save in LocalStorage for "Recent Login"
+            const userDoc = await getDoc(doc(db, "users", userCredential.user.uid));
+            if (userDoc.exists()) {
+                localStorage.setItem('na_last_login', JSON.stringify(userDoc.data()));
+            }
+
+            // Safe to Redirect
             window.location.href = "index.html";
 
         } catch (error) {
@@ -134,39 +193,13 @@ if (loginForm) {
             
             submitBtn.innerText = "Log in";
             submitBtn.disabled = false;
+            window.isAuthenticating = false; // Unlock on error
         }
     });
 }
 
 // ==========================================
-// 4. CHANGE USERNAME (Now incredibly easy)
-// ==========================================
-export async function changeMyUsername(newUsernameInput) {
-    const user = auth.currentUser;
-    if (!user) throw new Error("Not logged in");
-
-    const newUsername = newUsernameInput.toLowerCase().replace(/\s+/g, '');
-
-    try {
-        // 1. Check if anyone else has it
-        const q = query(collection(db, "users"), where("username", "==", newUsername));
-        const querySnapshot = await getDocs(q);
-        
-        if (!querySnapshot.empty) throw new Error("username-taken");
-
-        // 2. Just update the single document!
-        await updateDoc(doc(db, "users", user.uid), {
-            username: newUsername
-        });
-
-        return { success: true };
-    } catch (error) {
-        throw error;
-    }
-}
-
-// ==========================================
-// 5. ERRORS
+// 4. ERRORS
 // ==========================================
 function getFriendlyErrorMessage(errorCode) {
     switch(errorCode) {

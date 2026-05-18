@@ -78,3 +78,60 @@
     .auth-image-section { display: none; /* Hide image on mobile to focus on form */ }
     .auth-form-section { padding: 30px 20px; }
 }
+
+
+
+
+
+
+
+
+/* --- Recent Login Feature --- */
+.recent-login-wrapper {
+    margin-bottom: 25px;
+    display: none; /* Hidden by default until JS detects a past login */
+    animation: fadeInUp 0.4s ease;
+}
+
+.recent-login-label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.recent-login-card {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--bg-color);
+    border: 1px solid var(--border-color);
+    padding: 10px 20px 10px 10px;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.recent-login-card:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.15);
+    transform: translateY(-2px);
+}
+
+.recent-login-info {
+    text-align: left;
+}
+
+.recent-login-name {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-main);
+    display: block;
+}
+
+.recent-login-sub {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}

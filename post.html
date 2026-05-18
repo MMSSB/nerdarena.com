@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nerd Arena | View Pitch</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <script src="theme.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header class="top-header">
+        <div class="logo"><i class="ph-fill ph-code"></i> <span>Nerd Arena</span></div>
+        <div class="header-actions">
+            <div class="user-profile dropdown-container" id="nav-user-container">
+                <div class="avatar-text bg-primary" id="nav-avatar">...</div>
+                <div class="dropdown-menu" id="nav-dropdown">
+                    <a href="profile.html"><i class="ri-user-line"></i> My Profile</a>
+                    <a href="index.html"><i class="ri-home-line"></i> Home</a>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" id="logout-btn" class="text-danger"><i class="ri-logout-box-r-line"></i> Log Out</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="profile-scroll-wrapper">
+        <div class="profile-container" style="max-width: 800px;">
+            
+            <div style="margin-bottom: 20px;">
+                <button onclick="window.history.back()" class="btn-action btn-outline" style="padding: 8px 15px;">
+                    <i class="ri-arrow-left-line"></i> Back
+                </button>
+            </div>
+
+            <div id="single-post-container">
+                <div style="text-align: center; padding: 40px; color: var(--text-muted);">
+                    <i class="ri-loader-4-line ri-spin" style="font-size: 2rem;"></i>
+                    <p style="margin-top: 10px;">Loading pitch...</p>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script type="module" src="gdrive.js"></script>
+    <script type="module" src="pload.js"></script>
+    <script type="module" src="post.js"></script>
+</body>
+</html>

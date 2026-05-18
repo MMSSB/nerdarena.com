@@ -1,0 +1,110 @@
+// search.js
+import { auth, db } from './firebase.js';
+import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+const urlParams = new URLSearchParams(window.location.search);
+const queryParam = urlParams.get('q') ? urlParams.get('q').toLowerCase() : '';
+
+document.addEventListener('userDataLoaded', () => {
+    const display = document.getElementById('search-query-display');
+    if (queryParam) {
+        display.innerText = `"${urlParams.get('q')}"`;
+        performAdvancedSearch(queryParam);
+    } else {
+        display.innerText = "Everything";
+        document.getElementById('search-results-posts').innerHTML = "<p style='text-align:center; padding:20px;'>Type something in the search bar above.</p>";
+        document.getElementById('people-grid-container').innerHTML = "";
+    }
+});
+
+// Rich Text Formatter (Copied from app.js)
+function formatContent(text) {
+    let safe = text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    safe = safe.replace(/```([\s\S]*?)```/g, '<div class="code-block"><pre><code>$1</code></pre></div>');
+    safe = safe.replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>');
+    safe = safe.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    return safe.replace(/\n/g, '<br>');
+}
+
+async function performAdvancedSearch(searchTerm) {
+    const postsContainer = document.getElementById('search-results-posts');
+    const peopleContainer = document.getElementById('people-grid-container');
+
+    try {
+        // 1. ADVANCED USER SEARCH (Checks Name, Username, and Bio)
+        const usersSnap = await getDocs(collection(db, "users"));
+        peopleContainer.innerHTML = '';
+        let foundUsers = 0;
+
+        usersSnap.forEach(doc => {
+            const user = doc.data();
+            const searchableText = `${user.fullname} ${user.username} ${user.bio || ''}`.toLowerCase();
+            
+            if (searchableText.includes(searchTerm)) {
+                foundUsers++;
+                const card = document.createElement('div');
+                card.className = 'network-card animate-fade-in';
+                card.onclick = () => window.location.href = `user.html?id=${user.uid}`;
+                
+                let avatarHTML = user.avatarClass?.includes('url(') 
+                    ? `<div class="avatar-text" style="background:${user.avatarClass}; background-size:cover; background-position:center;"></div>`
+                    : `<div class="avatar-text ${user.avatarClass || 'bg-blue'}">${user.fullname.substring(0,2).toUpperCase()}</div>`;
+
+                card.innerHTML = `
+                    ${avatarHTML}
+                    <div style="flex: 1; overflow: hidden;">
+                        <strong style="display:block; font-size:1rem; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${user.fullname}</strong>
+                        <span style="font-size:0.8rem; color:var(--text-muted);">@${user.username}</span>
+                        ${user.bio ? `<p style="font-size:0.85rem; color:var(--text-main); margin-top:5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${user.bio}</p>` : ''}
+                    </div>
+                `;
+                peopleContainer.appendChild(card);
+            }
+        });
+        if (foundUsers === 0) peopleContainer.innerHTML = "<div style='grid-column: 1/-1; text-align:center; padding: 30px; color: var(--text-muted);'>No developers found.</div>";
+
+        // 2. ADVANCED POST SEARCH (Checks Author and Content)
+        const postsSnap = await getDocs(collection(db, "posts"));
+        postsContainer.innerHTML = '';
+        let foundPosts = 0;
+
+        // Collect and sort by most recent
+        let matchedPosts = [];
+        postsSnap.forEach(docSnap => {
+            const post = docSnap.data();
+            post.id = docSnap.id;
+            if (post.content.toLowerCase().includes(searchTerm) || post.authorName.toLowerCase().includes(searchTerm)) {
+                matchedPosts.push(post);
+            }
+        });
+
+        matchedPosts.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+        matchedPosts.forEach(post => {
+            foundPosts++;
+            const el = document.createElement('div');
+            el.className = 'card post animate-fade-in';
+            el.style.cursor = "pointer";
+            el.onclick = () => window.location.href = `post.html?id=${post.id}`; // Click anywhere to view post
+            
+            el.innerHTML = `
+                <div class="post-header" style="margin-bottom: 5px;">
+                    <div class="post-author">
+                        <div class="author-info">
+                            <strong>${post.authorName}</strong> 
+                            <span style="color:var(--text-muted); font-size:0.8rem;">• Match in Pitch</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="post-content" style="font-size: 1rem; color: var(--text-muted);"><p>${formatContent(post.content)}</p></div>
+            `;
+            postsContainer.appendChild(el);
+        });
+
+        if (foundPosts === 0) postsContainer.innerHTML = "<div style='text-align:center; padding: 40px; color: var(--text-muted);'>No pitches or ideas found.</div>";
+
+    } catch (error) {
+        console.error("Search error:", error);
+        postsContainer.innerHTML = "<p style='color:red; text-align:center;'>Error executing search engine.</p>";
+    }
+}

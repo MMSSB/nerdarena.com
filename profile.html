@@ -9,6 +9,7 @@
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script type="module" src="pload.js"></script>
+    <script src="theme.js"></script>
     
     <link rel="stylesheet" href="style.css">
 </head>
@@ -33,7 +34,7 @@
                 <div class="avatar-text bg-primary" id="nav-avatar">...</div>
                 <div class="dropdown-menu" id="nav-dropdown">
                     <a href="profile.html"><i class="ri-user-line"></i> My Profile</a>
-                    <a href="settings-account.html"><i class="ri-settings-4-line"></i> Settings</a>
+                    <a href="settings.html"><i class="ri-settings-4-line"></i> Settings</a>
                     <div class="dropdown-divider"></div>
                     <a href="#" id="logout-btn" class="text-danger"><i class="ri-logout-box-r-line"></i> Log Out</a>
                 </div>
@@ -69,7 +70,7 @@
             </section>
 
             <nav class="profile-tabs animate-fade-in" style="animation-delay: 0.2s;">
-                <button class="tab-item active">Pitches</button>
+                <button class="tab-item active">Posts</button>
                 <button class="tab-item">Architecture</button>
                 <button class="tab-item">Repositories</button>
                 <button class="tab-item">Stack Blueprint</button>
@@ -102,24 +103,34 @@
                     </div>
                 </aside>
 
-                <section class="profile-feed animate-fade-in" style="animation-delay: 0.4s;">
-                    
-                    <div class="card create-post">
-                        <div class="post-input-wrapper">
-                            <div class="avatar-text bg-primary">...</div>
-                            <textarea placeholder="Pitch a new architecture variant or update your stack roadmap..." rows="2"></textarea>
-                        </div>
-                        <div class="post-actions">
-                            <div class="action-icons">
-                                <span title="Add Code Snippet"><i class="ph ph-code-block"></i></span> 
-                                <span title="Format Markdown"><i class="ph ph-text-b"></i></span> 
-                                <span title="Link Repo"><i class="ph ph-git-branch"></i></span> 
-                            </div>
-                            <button class="btn-post">Pitch Idea</button>
-                        </div>
-                    </div>
+               <section class="profile-feed animate-fade-in" style="animation-delay: 0.4s;">
+    
+    <div id="tab-pitches" class="profile-tab-content active">
+        <div class="card create-post">
+            <div class="post-input-wrapper">
+                <div class="avatar-text bg-primary">...</div>
+                <textarea placeholder="Pitch a new architecture variant..." rows="2"></textarea>
+            </div>
+            <div class="post-actions">
+                <div class="action-icons">
+                    <span title="Add Code"><i class="ph ph-code-block"></i></span> 
+                </div>
+                <button class="btn-post">Post Idea</button>
+            </div>
+        </div>
+        <div id="my-posts-container"></div>
+    </div>
 
-                    </section>
+    <div id="tab-network" class="profile-tab-content">
+        <h3 style="margin-bottom: 15px; font-size: 1.1rem;"><i class="ri-group-line"></i> Your Backers (Followers)</h3>
+        <div class="network-grid" id="network-container">
+            </div>
+    </div>
+
+    <div id="tab-architecture" class="profile-tab-content">
+        <p style="color: var(--text-muted); text-align: center; padding: 40px;">Architecture vault coming soon...</p>
+    </div>
+</section>
             </div>
         </div>
     </main>

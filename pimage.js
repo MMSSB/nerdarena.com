@@ -4,9 +4,11 @@ export const avatarImages = [
     "linear-gradient(135deg, #a855f7, #9333ea)",
     "linear-gradient(135deg, #10b981, #047857)",
     "linear-gradient(135deg, #f59e0b, #b45309)",
-    "url('https://api.dicebear.com/7.x/avataaars/svg?seed=Nerd1&backgroundColor=b6e3f4')",
-    "url('images/profile/ken.jpg')",
-    "url('https://api.dicebear.com/7.x/bottts/svg?seed=Matrix')"
+    // "url('https://api.dicebear.com/7.x/avataaars/svg?seed=Nerd1&backgroundColor=b6e3f4')",
+    "url('images/profile/1.png')",
+    "url('images/profile/2.png')"
+    // "url('images/profile/ken.jpg')"
+    // "url('https://api.dicebear.com/7.x/bottts/svg?seed=Matrix')"
 ];
 
 export const coverImages = [

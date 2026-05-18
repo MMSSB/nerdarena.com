@@ -9,6 +9,8 @@
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     
+    <script src="theme.js"></script> 
+    
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -25,8 +27,14 @@
             <button class="icon-btn show-mobile-only"><i class="ph ph-magnifying-glass"></i></button>
             <button class="icon-btn hide-mobile"><i class="ri-message-3-line"></i></button>
             <button class="icon-btn hide-mobile"><i class="ri-notification-3-line"></i></button>
-            <div class="user-profile" onclick="window.location.href='profile.html'" style="cursor: pointer;">
-                <div class="avatar-text bg-primary">...</div>
+            <div class="user-profile dropdown-container" id="nav-user-container">
+                <div class="avatar-text bg-primary" id="nav-avatar">...</div>
+                <div class="dropdown-menu" id="nav-dropdown">
+                    <a href="profile.html"><i class="ri-user-line"></i> My Profile</a>
+                    <a href="settings-account.html"><i class="ri-settings-4-line"></i> Settings</a>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" id="logout-btn" class="text-danger"><i class="ri-logout-box-r-line"></i> Log Out</a>
+                </div>
             </div>
         </div>
     </header>
@@ -35,13 +43,13 @@
         <div class="profile-container">
             
             <section class="profile-hero animate-fade-in" style="animation-delay: 0.1s;">
-                <div class="cover-banner" style="background: linear-gradient(135deg, #451a03, #78350f);">
+                <div class="cover-banner" style="background: linear-gradient(135deg, #1e1b4b, #312e81);">
                     <div class="tech-grid-overlay"></div>
                 </div>
                 
                 <div class="hero-info-bar">
                     <div class="avatar-wrapper">
-                        <div class="profile-avatar" style="background: linear-gradient(135deg, #b45309, #d97706);">☕</div>
+                        <div class="profile-avatar bg-blue">...</div>
                     </div>
                     
                     <div class="user-meta-details">
@@ -50,7 +58,7 @@
                             <span class="user-stats"><i class="ph-bold ph-users-three"></i> ...</span>
                         </div>
                         <div class="profile-actions">
-                            <button class="btn-action btn-solid"><i class="ri-user-add-line"></i> Follow Nerd</button>
+                            <button id="follow-btn" class="btn-action btn-solid"><i class="ri-user-add-line"></i> Follow Nerd</button>
                             <button class="btn-action btn-outline"><i class="ri-chat-3-line"></i> Collaborate</button>
                         </div>
                     </div>
@@ -70,11 +78,11 @@
                 <aside class="profile-sidebar animate-fade-in" style="animation-delay: 0.3s;">
                     <div class="card widget-card">
                         <h3><i class="ph-bold ph-gear"></i> Dev Blueprint</h3>
-                        <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 15px; line-height: 1.5;">
-                            Architect data fetching...
+                        <p id="dev-bio" style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 15px; line-height: 1.5;">
+                            Loading bio...
                         </p>
                         <div class="blueprint-actions">
-                            <button class="btn-blueprint" style="justify-content: center;"><i class="ri-github-fill"></i> View GitHub Profile</button>
+                            <button id="dev-github-btn" class="btn-blueprint" style="justify-content: center; display: none;"><i class="ri-github-fill"></i> View GitHub Profile</button>
                         </div>
                     </div>
 
@@ -93,7 +101,27 @@
                 </aside>
 
                 <section class="profile-feed animate-fade-in" style="animation-delay: 0.4s;">
-                    
+                    <div id="tab-pitches" class="profile-tab-content active">
+                        <div id="target-posts-container"></div>
+                    </div>
+
+                    <div id="tab-architecture" class="profile-tab-content">
+                        <p style="color: var(--text-muted); text-align: center; padding: 40px;">Architecture vault coming soon...</p>
+                    </div>
+
+                    <div id="tab-repositories" class="profile-tab-content">
+                        <p style="color: var(--text-muted); text-align: center; padding: 40px;">Repositories integration coming soon...</p>
+                    </div>
+
+                    <div id="tab-stack" class="profile-tab-content">
+                        <p style="color: var(--text-muted); text-align: center; padding: 40px;">Stack Blueprint coming soon...</p>
+                    </div>
+
+                    <div id="tab-network" class="profile-tab-content">
+                        <h3 style="margin-bottom: 15px; font-size: 1.1rem;"><i class="ri-group-line"></i> Backers (Followers)</h3>
+                        <div class="network-grid" id="network-container">
+                            </div>
+                    </div>
                 </section>
             </div>
         </div>
@@ -107,6 +135,8 @@
         <a href="profile.html"><i class="ph ph-user"></i></a>
     </nav>
 
+    <script type="module" src="gdrive.js"></script>
+    <script type="module" src="pload.js"></script>
     <script type="module" src="user.js"></script>
 </body>
 </html>
