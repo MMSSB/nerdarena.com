@@ -29,8 +29,21 @@ onAuthStateChanged(auth, async (user) => {
 function setupNavbar(userData) {
     const navAvatar = document.getElementById('nav-avatar');
     if (navAvatar) {
-        navAvatar.innerText = userData.fullname.substring(0, 2).toUpperCase();
-        navAvatar.className = `avatar-text ${userData.avatarClass || 'bg-primary'}`;
+        const initials = userData.fullname ? userData.fullname.substring(0, 2).toUpperCase() : 'NA';
+        const avatarVal = userData.avatarClass || 'bg-primary';
+        
+        // Check if avatar is a class name or an image asset URL string
+        if (avatarVal.includes('url(')) {
+            navAvatar.className = 'avatar-text';
+            navAvatar.style.background = avatarVal;
+            navAvatar.style.backgroundSize = 'cover';
+            navAvatar.style.backgroundPosition = 'center';
+            navAvatar.innerText = ''; // Prevent doubled overlapping text
+        } else {
+            navAvatar.className = `avatar-text ${avatarVal}`;
+            navAvatar.style.background = '';
+            navAvatar.innerText = initials;
+        }
     }
 
     // Dropdown Logic

@@ -39,7 +39,7 @@
                 <div class="hero-info-bar">
                     <div class="avatar-wrapper">
                         <div class="profile-avatar bg-primary editable-region" id="avatar-display" onclick="openModal('modal-avatar')">
-                            <span id="avatar-initials">NA</span>
+                            <span id="avatar-initials"></span>
                             <div class="edit-overlay round"><i class="ri-pencil-line"></i></div>
                         </div>
                     </div>
@@ -110,7 +110,7 @@
                     </div>
                     <div class="input-group">
                         <label>Bio / Headline</label>
-                        <textarea id="input-bio" rows="2" placeholder="e.g. Senior Backend Architect at Coffee200"></textarea>
+                        <textarea id="input-bio" rows="2" placeholder="e.g. Senior Backend Architect"></textarea>
                     </div>
                     <div class="input-group">
                         <label>GitHub Username</label>
@@ -131,18 +131,51 @@
             </div>
             
             <div class="coffee-tabs">
-                <span class="active">Library</span>
-                <span>Drive</span>
-                <span>Pinterest</span>
+                <span class="tab-btn active" onclick="switchTab('avatar', 'lib', event)">Library</span>
+                <span class="tab-btn" onclick="switchTab('avatar', 'saved', event)">Saved</span>
+                <span class="tab-btn" onclick="switchTab('avatar', 'text', event)">Text</span>
+                <span class="tab-btn" onclick="switchTab('avatar', 'link', event)">Add Link</span>
             </div>
 
-            <div class="coffee-grid-container">
-                <div class="coffee-grid" id="avatar-grid-container">
+            <div class="tab-content active" id="avatar-tab-lib">
+                <div id="avatar-grid-lib" class="coffee-grid"></div>
+            </div>
+
+            <div class="tab-content" id="avatar-tab-saved">
+                <div id="avatar-grid-saved" class="coffee-grid"></div>
+            </div>
+            
+            <div class="tab-content" id="avatar-tab-text">
+                <div class="text-avatar-creator">
+                    <div class="text-avatar-preview" id="text-avatar-preview" style="background: #6366f1; color: #ffffff;">NA</div>
+                    <div style="flex: 1;">
+                        <label style="font-weight: 700; font-size: 0.85rem; display: block; margin-bottom: 8px;">Background Color</label>
+                        <div class="color-presets" id="bg-color-presets">
+                            <div class="color-swatch selected" style="background: #6366f1;" data-color="#6366f1"></div>
+                            <div class="color-swatch" style="background: #ef4444;" data-color="#ef4444"></div>
+                            <div class="color-swatch" style="background: #10b981;" data-color="#10b981"></div>
+                            <div class="color-swatch" style="background: #111827;" data-color="#111827"></div>
+                        </div>
+                        <div class="custom-color-wrap">
+                            <input type="color" id="custom-bg-color" value="#6366f1"> <span>Custom Background</span>
+                        </div>
+                        <button class="btn-post" id="apply-text-avatar-btn" style="padding: 8px 15px; font-size: 0.9rem; width: 100%;">Select this Style</button>
                     </div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="avatar-tab-link">
+                <div class="input-group">
+                    <label style="margin-bottom: 0;">Paste Image URL</label>
+                    <div class="link-input-wrapper">
+                        <input type="text" id="avatar-url-input" placeholder="https://...">
+                        <button id="add-avatar-btn" type="button">Save Link</button>
+                    </div>
+                </div>
             </div>
 
             <div class="coffee-footer">
-                <button class="btn-save-modal" id="save-avatar-btn"><i class="ri-check-line"></i> Save Avatar</button>
+                <button class="btn-save-modal" id="save-avatar-btn">Set as Avatar</button>
                 <button class="btn-cancel-modal" onclick="closeModal('modal-avatar')">Cancel</button>
             </div>
         </div>
@@ -154,20 +187,27 @@
                 <h3>Change Cover</h3>
                 <i class="ri-close-line coffee-close" onclick="closeModal('modal-cover')"></i>
             </div>
-            
             <div class="coffee-tabs">
-                <span class="active">Library</span>
-                <span>Drive</span>
-                <span>Pinterest</span>
+                <span class="tab-btn active" onclick="switchTab('cover', 'lib', event)">Library</span>
+                <span class="tab-btn" onclick="switchTab('cover', 'saved', event)">Saved</span>
+                <span class="tab-btn" onclick="switchTab('cover', 'link', event)">Add Link</span>
             </div>
 
-            <div class="coffee-grid-container">
-                <div class="coffee-grid" id="cover-grid-container">
+            <div class="tab-content active" id="cover-tab-lib"><div id="cover-grid-lib" class="coffee-grid"></div></div>
+            <div class="tab-content" id="cover-tab-saved"><div id="cover-grid-saved" class="coffee-grid"></div></div>
+
+            <div class="tab-content" id="cover-tab-link">
+                <div class="input-group">
+                    <label style="margin-bottom: 0;">Paste Image URL</label>
+                    <div class="link-input-wrapper">
+                        <input type="text" id="cover-url-input" placeholder="https://...">
+                        <button id="add-cover-btn" type="button">Save Link</button>
                     </div>
+                </div>
             </div>
 
             <div class="coffee-footer">
-                <button class="btn-save-modal" id="save-cover-btn"><i class="ri-check-line"></i> Save Cover</button>
+                <button class="btn-save-modal" id="save-cover-btn">Set as Cover</button>
                 <button class="btn-cancel-modal" onclick="closeModal('modal-cover')">Cancel</button>
             </div>
         </div>
@@ -176,6 +216,15 @@
     <script>
         function openModal(id) { document.getElementById(id).classList.add('active'); }
         function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+        
+        function switchTab(modalType, tabName, event) {
+            const modal = document.getElementById(`modal-${modalType}`);
+            modal.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            modal.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            event.currentTarget.classList.add('active');
+            document.getElementById(`${modalType}-tab-${tabName}`).classList.add('active');
+        }
     </script>
     <script type="module" src="pload.js"></script>
     <script type="module" src="settings-account.js"></script>

@@ -1,3 +1,4 @@
+// profile.js
 import { auth, db } from './firebase.js';
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 import { doc, getDoc, collection, query, where, orderBy, onSnapshot, updateDoc, deleteDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
@@ -21,24 +22,37 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 async function loadMyProfile(uid) {
-    
     const userDoc = await getDoc(doc(db, "users", uid));
     if (userDoc.exists()) {
         const data = userDoc.data();
         const initials = data.fullname ? data.fullname.substring(0, 2).toUpperCase() : 'NA';
         const followerCount = data.followers ? data.followers.length : 0;
+        const profileAvatar = document.querySelector('.profile-avatar');
         
-        document.querySelector('.profile-avatar').innerText = initials;
+        // Handle background color classes vs dynamic custom assets variables
+        const avatarVal = data.avatarClass || 'bg-primary';
+        if (avatarVal.includes('url(')) {
+            profileAvatar.className = 'profile-avatar';
+            profileAvatar.style.background = avatarVal;
+            profileAvatar.style.backgroundSize = 'cover';
+            profileAvatar.style.backgroundPosition = 'center';
+            profileAvatar.innerText = '';
+        } else {
+            profileAvatar.className = `profile-avatar ${avatarVal}`;
+            profileAvatar.style.background = '';
+            profileAvatar.innerText = initials;
+        }
+
         document.querySelector('.name-stats h2').innerText = data.fullname;
         document.querySelector('.user-stats').innerHTML = `<i class="ph-bold ph-users-three"></i> ${followerCount} Backers`;
-    if (data.coverStyle) {
-    const cover = document.querySelector('.cover-banner');
-    cover.style.background = data.coverStyle;
-    cover.style.backgroundSize = 'cover';
-    cover.style.backgroundPosition = 'center';
-}
+        
+        if (data.coverStyle) {
+            const cover = document.querySelector('.cover-banner');
+            cover.style.background = data.coverStyle;
+            cover.style.backgroundSize = 'cover';
+            cover.style.backgroundPosition = 'center';
+        }
     }
-    
 }
 
 function loadMyPosts(uid) {
@@ -46,10 +60,21 @@ function loadMyPosts(uid) {
     const createPostBox = document.querySelector('.create-post');
     const q = query(collection(db, "posts"), where("authorId", "==", uid), orderBy("timestamp", "desc"));
 
-    // Real-time listener for your own profile
     onSnapshot(q, (snapshot) => {
         feedContainer.innerHTML = '';
         if (createPostBox) feedContainer.appendChild(createPostBox);
+
+        // Instantly force user input avatar preview container configurations
+        if (window.currentUserData) {
+            const entryAvatar = el => {
+                const avatarVal = window.currentUserData.avatarClass || 'bg-primary';
+                if (avatarVal.includes('url(')) {
+                    el.style.background = avatarVal; el.style.backgroundSize = 'cover'; el.innerText = '';
+                } else { el.className = `avatar-text ${avatarVal}`; el.innerText = window.currentUserData.fullname.substring(0, 2).toUpperCase(); }
+            };
+            const currentBoxAv = document.querySelector('.create-post .avatar-text');
+            if (currentBoxAv) entryAvatar(currentBoxAv);
+        }
 
         snapshot.forEach((docSnap) => {
             const post = docSnap.data();
@@ -68,7 +93,7 @@ function loadMyPosts(uid) {
             postElement.innerHTML = `
                 <div class="post-header">
                     <div class="post-author">
-                        <div class="avatar-text bg-primary">${initials}</div>
+                        <div class="avatar-text wall-avatar-target"></div>
                         <div class="author-info">
                             <strong>${post.authorName}</strong> 
                             <span class="badge badge-idea">💡 My Pitch</span>
@@ -83,10 +108,21 @@ function loadMyPosts(uid) {
                     </div>
                 </div>
             `;
+            
+            const targetAvatar = postElement.querySelector('.wall-avatar-target');
+            const avatarVal = post.authorAvatarClass || 'bg-primary';
+            if (avatarVal.includes('url(')) {
+                targetAvatar.style.background = avatarVal;
+                targetAvatar.style.backgroundSize = 'cover';
+                targetAvatar.style.backgroundPosition = 'center';
+            } else {
+                targetAvatar.className = `avatar-text ${avatarVal}`;
+                targetAvatar.innerText = initials;
+            }
+
             feedContainer.appendChild(postElement);
         });
 
-        // Re-attach listeners inside profile view
         document.querySelectorAll('.likes').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 const postId = e.currentTarget.getAttribute('data-id');

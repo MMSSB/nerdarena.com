@@ -1,3 +1,4 @@
+// app.js
 import { auth, db } from './firebase.js';
 import { collection, addDoc, query, orderBy, onSnapshot, doc, updateDoc, deleteDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
@@ -9,8 +10,20 @@ document.addEventListener('userDataLoaded', () => {
 function updateCreatePostUI(user) {
     const createBoxAvatar = document.querySelector('.create-post .avatar-text');
     if (createBoxAvatar) {
-        createBoxAvatar.innerText = user.fullname.substring(0, 2).toUpperCase();
-        createBoxAvatar.className = `avatar-text ${user.avatarClass || 'bg-primary'}`;
+        const initials = user.fullname ? user.fullname.substring(0, 2).toUpperCase() : 'NA';
+        const avatarVal = user.avatarClass || 'bg-primary';
+
+        if (avatarVal.includes('url(')) {
+            createBoxAvatar.className = 'avatar-text';
+            createBoxAvatar.style.background = avatarVal;
+            createBoxAvatar.style.backgroundSize = 'cover';
+            createBoxAvatar.style.backgroundPosition = 'center';
+            createBoxAvatar.innerText = '';
+        } else {
+            createBoxAvatar.className = `avatar-text ${avatarVal}`;
+            createBoxAvatar.style.background = '';
+            createBoxAvatar.innerText = initials;
+        }
     }
 }
 
@@ -48,19 +61,23 @@ if (btnPost && postTextarea) {
 function loadFeed() {
     const feedContainer = document.querySelector('.main-feed');
     const createPostBox = document.querySelector('.create-post');
+    
     onSnapshot(query(collection(db, "posts"), orderBy("timestamp", "desc")), (snapshot) => {
         feedContainer.innerHTML = '';
         if (createPostBox) feedContainer.appendChild(createPostBox);
+        
         snapshot.forEach((docSnap) => {
             const post = docSnap.data();
             const isLiked = post.likedBy && post.likedBy.includes(auth.currentUser.uid);
             const isMyPost = post.authorId === auth.currentUser.uid;
+            const initials = post.authorName ? post.authorName.substring(0, 2).toUpperCase() : 'NA';
+            
             const el = document.createElement('div');
             el.className = 'card post animate-fade-in';
             el.innerHTML = `
                 <div class="post-header">
                     <div class="post-author" style="cursor:pointer;" onclick="goToProfile('${post.authorId}')">
-                        <div class="avatar-text ${post.authorAvatarClass || 'bg-blue'}">${post.authorName.substring(0,2).toUpperCase()}</div>
+                        <div class="avatar-text post-avatar-target"></div>
                         <div class="author-info"><strong>${post.authorName}</strong> <span class="badge badge-idea">💡 Dev</span></div>
                     </div>
                     ${isMyPost ? `<button class="btn-more delete-post-btn" data-id="${docSnap.id}"><i class="ri-delete-bin-line" style="color:#ef4444;"></i></button>` : ''}
@@ -72,6 +89,19 @@ function loadFeed() {
                     </div>
                 </div>
             `;
+            
+            // Dynamic check before inserting to prevent structural desync crashes
+            const targetAvatar = el.querySelector('.post-avatar-target');
+            const avatarVal = post.authorAvatarClass || 'bg-blue';
+            if (avatarVal.includes('url(')) {
+                targetAvatar.style.background = avatarVal;
+                targetAvatar.style.backgroundSize = 'cover';
+                targetAvatar.style.backgroundPosition = 'center';
+            } else {
+                targetAvatar.className = `avatar-text ${avatarVal}`;
+                targetAvatar.innerText = initials;
+            }
+            
             feedContainer.appendChild(el);
         });
         attachListeners();

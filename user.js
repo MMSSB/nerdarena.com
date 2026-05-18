@@ -1,3 +1,4 @@
+// user.js
 import { auth, db } from './firebase.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 import { doc, getDoc, collection, query, where, orderBy, onSnapshot, updateDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
@@ -18,7 +19,6 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 function loadTargetProfile(uid) {
-    // We use onSnapshot so the Follow count updates immediately when you click the button
     onSnapshot(doc(db, "users", uid), (userDoc) => {
         if (userDoc.exists()) {
             const data = userDoc.data();
@@ -27,22 +27,35 @@ function loadTargetProfile(uid) {
             const followers = data.followers || [];
             const isFollowing = followers.includes(auth.currentUser.uid);
             
-            document.querySelector('.profile-avatar').innerText = initials;
+            const profileAvatar = document.querySelector('.profile-avatar');
+            const avatarVal = data.avatarClass || 'bg-primary';
+            if (avatarVal.includes('url(')) {
+                profileAvatar.className = 'profile-avatar';
+                profileAvatar.style.background = avatarVal;
+                profileAvatar.style.backgroundSize = 'cover';
+                profileAvatar.style.backgroundPosition = 'center';
+                profileAvatar.innerText = '';
+            } else {
+                profileAvatar.className = `profile-avatar ${avatarVal}`;
+                profileAvatar.style.background = '';
+                profileAvatar.innerText = initials;
+            }
+
             document.querySelector('.name-stats h2').innerText = `${data.fullname} (@${data.username})`;
             document.querySelector('.user-stats').innerHTML = `<i class="ph-bold ph-users-three"></i> ${followers.length} Backers`;
-if (data.coverStyle) {
-    const cover = document.querySelector('.cover-banner');
-    cover.style.background = data.coverStyle;
-    cover.style.backgroundSize = 'cover';
-    cover.style.backgroundPosition = 'center';
-}
-            // Setup Follow Button Logic
+            
+            if (data.coverStyle) {
+                const cover = document.querySelector('.cover-banner');
+                cover.style.background = data.coverStyle;
+                cover.style.backgroundSize = 'cover';
+                cover.style.backgroundPosition = 'center';
+            }
+
             const followBtn = document.getElementById('follow-btn');
             if (followBtn) {
                 followBtn.innerHTML = isFollowing ? `<i class="ri-user-unfollow-line"></i> Unfollow` : `<i class="ri-user-add-line"></i> Follow Nerd`;
                 followBtn.className = isFollowing ? 'btn-action btn-outline' : 'btn-action btn-solid';
                 
-                // Remove old event listeners by replacing the node (cleanest way in vanilla JS)
                 const newFollowBtn = followBtn.cloneNode(true);
                 followBtn.parentNode.replaceChild(newFollowBtn, followBtn);
                 
@@ -90,7 +103,7 @@ function loadTargetPosts(uid) {
             postElement.innerHTML = `
                 <div class="post-header">
                     <div class="post-author">
-                        <div class="avatar-text bg-purple">${initials}</div>
+                        <div class="avatar-text target-post-avatar"></div>
                         <div class="author-info"><strong>${post.authorName}</strong></div>
                     </div>
                 </div>
@@ -101,10 +114,21 @@ function loadTargetPosts(uid) {
                     </div>
                 </div>
             `;
+            
+            const targetAvatar = postElement.querySelector('.target-post-avatar');
+            const avatarVal = post.authorAvatarClass || 'bg-purple';
+            if (avatarVal.includes('url(')) {
+                targetAvatar.style.background = avatarVal;
+                targetAvatar.style.backgroundSize = 'cover';
+                targetAvatar.style.backgroundPosition = 'center';
+            } else {
+                targetAvatar.className = `avatar-text ${avatarVal}`;
+                targetAvatar.innerText = initials;
+            }
+
             feedContainer.appendChild(postElement);
         });
 
-        // Upvote functionality when viewing other users
         document.querySelectorAll('.likes').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 const postId = e.currentTarget.getAttribute('data-id');
