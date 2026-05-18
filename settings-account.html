@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Nerd Arena | Settings</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header class="top-header">
+        <div class="logo"><i class="ph-fill ph-code"></i> <span>Nerd Arena</span></div>
+        <div class="header-actions">
+            <div class="user-profile dropdown-container" id="nav-user-container">
+                <div class="avatar-text bg-primary" id="nav-avatar">...</div>
+                <div class="dropdown-menu" id="nav-dropdown">
+                    <a href="profile.html"><i class="ri-user-line"></i> My Profile</a>
+                    <a href="index.html"><i class="ri-home-line"></i> Home</a>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" id="logout-btn" class="text-danger"><i class="ri-logout-box-r-line"></i> Log Out</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="profile-scroll-wrapper">
+        <div class="profile-container">
+            
+            <section class="profile-hero animate-fade-in" style="animation-delay: 0.1s;">
+                <div class="cover-banner editable-region" id="cover-display" onclick="openModal('modal-cover')">
+                    <div class="tech-grid-overlay"></div>
+                    <div class="edit-overlay"><i class="ri-camera-lens-line"></i> Change Cover</div>
+                </div>
+                
+                <div class="hero-info-bar">
+                    <div class="avatar-wrapper">
+                        <div class="profile-avatar bg-primary editable-region" id="avatar-display" onclick="openModal('modal-avatar')">
+                            <span id="avatar-initials">NA</span>
+                            <div class="edit-overlay round"><i class="ri-pencil-line"></i></div>
+                        </div>
+                    </div>
+                    
+                    <div class="user-meta-details">
+                        <div class="name-stats">
+                            <h2 id="display-fullname">Loading...</h2>
+                            <span class="user-stats" id="display-username">@username</span>
+                        </div>
+                        <div class="profile-actions">
+                            <button class="btn-action btn-outline" onclick="window.location.href='profile.html'"><i class="ri-eye-line"></i> View Profile</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="profile-grid">
+                <div class="settings-column animate-fade-in" style="animation-delay: 0.2s;">
+                    <div class="settings-panel">
+                        <div class="settings-panel-header">
+                            <h3><i class="ri-user-settings-line"></i> Profile Information</h3>
+                            <button class="btn-more" onclick="openModal('modal-info')" style="padding: 5px 15px; border: 1px solid var(--border-color); font-size: 0.9rem;"><i class="ri-pencil-line"></i> Edit</button>
+                        </div>
+                        <div class="settings-text-row">
+                            <label>Bio / Headline</label>
+                            <p id="display-bio">No bio added yet. Tell the arena about your stack!</p>
+                        </div>
+                        <div class="settings-text-row">
+                            <label>GitHub Profile</label>
+                            <p id="display-github" style="color: var(--primary-color);">Not linked</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-column animate-fade-in" style="animation-delay: 0.3s;">
+                    <div class="settings-panel">
+                        <div class="settings-panel-header">
+                            <h3><i class="ri-shield-keyhole-line"></i> Account Details</h3>
+                        </div>
+                        <div class="settings-text-row">
+                            <label>E-mail Address</label>
+                            <p id="display-email">loading@email.com</p>
+                        </div>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 20px;">
+                            To change your password or email, please contact support.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="modal-overlay" id="modal-info">
+        <div class="coffee-modal modal-box">
+            <div class="coffee-header">
+                <h3>Edit Profile Info</h3>
+                <i class="ri-close-line coffee-close" onclick="closeModal('modal-info')"></i>
+            </div>
+            <div class="modal-body" style="padding: 20px 24px;">
+                <form id="form-info">
+                    <div class="input-group">
+                        <label>Full Name</label>
+                        <input type="text" id="input-fullname" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Username (Unique)</label>
+                        <input type="text" id="input-username" oninput="this.value = this.value.toLowerCase().replace(/\s+/g, '')" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Bio / Headline</label>
+                        <textarea id="input-bio" rows="2" placeholder="e.g. Senior Backend Architect at Coffee200"></textarea>
+                    </div>
+                    <div class="input-group">
+                        <label>GitHub Username</label>
+                        <input type="text" id="input-github" placeholder="e.g. MahmoudDev">
+                    </div>
+                    <button type="submit" class="btn-post" style="width: 100%;">Save Information</button>
+                    <p id="msg-info" class="error-msg" style="text-align: center; margin-top: 10px; display: none;"></p>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-avatar">
+        <div class="coffee-modal modal-box">
+            <div class="coffee-header">
+                <h3>Change Avatar</h3>
+                <i class="ri-close-line coffee-close" onclick="closeModal('modal-avatar')"></i>
+            </div>
+            
+            <div class="coffee-tabs">
+                <span class="active">Library</span>
+                <span>Drive</span>
+                <span>Pinterest</span>
+            </div>
+
+            <div class="coffee-grid-container">
+                <div class="coffee-grid" id="avatar-grid-container">
+                    </div>
+            </div>
+
+            <div class="coffee-footer">
+                <button class="btn-save-modal" id="save-avatar-btn"><i class="ri-check-line"></i> Save Avatar</button>
+                <button class="btn-cancel-modal" onclick="closeModal('modal-avatar')">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-cover">
+        <div class="coffee-modal modal-box">
+            <div class="coffee-header">
+                <h3>Change Cover</h3>
+                <i class="ri-close-line coffee-close" onclick="closeModal('modal-cover')"></i>
+            </div>
+            
+            <div class="coffee-tabs">
+                <span class="active">Library</span>
+                <span>Drive</span>
+                <span>Pinterest</span>
+            </div>
+
+            <div class="coffee-grid-container">
+                <div class="coffee-grid" id="cover-grid-container">
+                    </div>
+            </div>
+
+            <div class="coffee-footer">
+                <button class="btn-save-modal" id="save-cover-btn"><i class="ri-check-line"></i> Save Cover</button>
+                <button class="btn-cancel-modal" onclick="closeModal('modal-cover')">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openModal(id) { document.getElementById(id).classList.add('active'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+    </script>
+    <script type="module" src="pload.js"></script>
+    <script type="module" src="settings-account.js"></script>
+</body>
+</html>

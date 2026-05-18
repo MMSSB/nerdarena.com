@@ -4,11 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Nerd Arena | The Idea Hub</title>
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -25,179 +23,68 @@
             <button class="icon-btn show-mobile-only"><i class="ph ph-magnifying-glass"></i></button>
             <button class="icon-btn hide-mobile"><i class="ri-message-3-line"></i></button>
             <button class="icon-btn hide-mobile"><i class="ri-notification-3-line"></i></button>
-            <div class="user-profile">
-                <div class="avatar-text bg-primary">MMS</div>
+            
+            <div class="user-profile dropdown-container" id="nav-user-container">
+                <div class="avatar-text bg-primary" id="nav-avatar">...</div>
+                <div class="dropdown-menu" id="nav-dropdown">
+                    <a href="profile.html"><i class="ri-user-line"></i> My Profile</a>
+                    <a href="settings-account.html"><i class="ri-settings-4-line"></i> Settings</a>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" id="logout-btn" class="text-danger"><i class="ri-logout-box-r-line"></i> Log Out</a>
+                </div>
             </div>
         </div>
     </header>
 
     <main class="app-layout">
-        
         <aside class="sidebar-nav">
             <ul class="nav-menu">
                 <li class="active"><i class="ph ph-terminal-window icon"></i> Arena Feed</li>
                 <li><i class="ph ph-lightbulb icon"></i> My Ideas</li>
                 <li><i class="ph ph-rocket-launch icon"></i> Shipped Projects</li>
             </ul>
-
             <h4 class="section-title">My Workspaces</h4>
             <ul class="nav-menu">
                 <li><i class="ri-folder-code-line icon"></i> Coffee200 Web</li>
-                <li><i class="ri-database-2-line icon"></i> Nutra-Egypt DB</li>
                 <li><i class="ri-server-line icon"></i> Local LLM Wrapper</li>
-            </ul>
-
-            <h4 class="section-title">Following Tags</h4>
-            <ul class="nav-menu tags-menu">
-                <li><span class="hash">#</span> SystemArchitecture</li>
-                <li><span class="hash">#</span> PureCSS</li>
-                <li><span class="hash">#</span> LookingForCoFounder</li>
             </ul>
         </aside>
 
         <section class="main-feed">
-            
-            <div class="card create-post animate-fade-in" style="animation-delay: 0.1s;">
+            <div class="card create-post animate-fade-in">
                 <div class="post-input-wrapper">
-                    <div class="avatar-text bg-primary">MMS</div>
+                    <div class="avatar-text bg-primary">...</div>
                     <textarea placeholder="Pitch your idea, architecture, or project roadmap..." rows="2"></textarea>
                 </div>
                 <div class="post-actions">
                     <div class="action-icons">
                         <span title="Add Code Snippet"><i class="ph ph-code-block"></i></span> 
                         <span title="Format Markdown"><i class="ph ph-text-b"></i></span> 
-                        <span title="Add Tag"><i class="ph ph-hash"></i></span> 
                     </div>
                     <button class="btn-post">Pitch Idea</button>
                 </div>
             </div>
-
-            <div class="card post animate-fade-in" style="animation-delay: 0.2s;">
-                <div class="post-header">
-                    <div class="post-author">
-                        <div class="avatar-text bg-blue">AD</div>
-                        <div class="author-info">
-                            <strong>Ahmed Dev</strong> 
-                            <span class="badge badge-idea">💡 Brainstorming</span>
-                            <span class="post-time">2 hours ago</span>
-                        </div>
-                    </div>
-                    <button class="btn-more"><i class="ri-more-fill"></i></button>
-                </div>
-                <div class="post-content">
-                    <h3>A Pure CSS Desktop Window Manager</h3>
-                    <p>I'm exploring the idea of building a web-based desktop environment simulator using absolutely no JavaScript for the window drag-and-drop mechanics. Instead, relying entirely on CSS Grid, resize properties, and hidden radio inputs for state management.</p>
-                    <p>Does anyone have experience handling z-index stacking context purely through CSS focus-within states?</p>
-                </div>
-                <div class="post-footer">
-                    <div class="likes"><i class="ph-fill ph-rocket"></i> Upvote <span>142</span></div>
-                    <div class="comments-shares">
-                        <span><i class="ri-git-pull-request-line"></i> Features <span>28</span></span>
-                        <span class="support-text"><i class="fa-solid fa-mug-hot"></i> Back Idea</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card post animate-fade-in" style="animation-delay: 0.3s;">
-                <div class="post-header">
-                    <div class="post-author">
-                        <div class="avatar-text bg-purple">SR</div>
-                        <div class="author-info">
-                            <strong>Sara R.</strong> 
-                            <span class="badge badge-shipped">🚀 Shipped</span>
-                            <span class="post-time">Yesterday at 10:40 AM</span>
-                        </div>
-                    </div>
-                    <button class="btn-more"><i class="ri-more-fill"></i></button>
-                </div>
-                <div class="post-content">
-                    <h3>Lightweight Fetch Wrapper for Next.js</h3>
-                    <p>Got tired of writing the same try/catch blocks for API calls. I wrote this tiny utility function that standardizes error handling. Feel free to use it in your projects!</p>
-                    
-                    <div class="code-block">
-<pre><code>export async function fetcher(url, options = {}) {
-  try {
-    const res = await fetch(url, options);
-    if (!res.ok) throw new Error(res.statusText);
-    return await res.json();
-  } catch (error) {
-    console.error("API Error:", error);
-    return null;
-  }
-}</code></pre>
-                    </div>
-                </div>
-                <div class="post-footer">
-                    <div class="likes unliked"><i class="ph ph-rocket"></i> Upvote <span>45</span></div>
-                    <div class="comments-shares">
-                        <span><i class="ri-git-pull-request-line"></i> Features <span>5</span></span>
-                        <span class="support-text"><i class="fa-solid fa-mug-hot"></i> Back Idea</span>
-                    </div>
-                </div>
-            </div>
-
-        </section>
+            </section>
 
         <aside class="sidebar-widgets">
-            
-            <div class="card widget animate-fade-in" style="animation-delay: 0.4s;">
+            <div class="card widget animate-fade-in">
                 <h3>🔥 Trending Ideas</h3>
                 <ul class="trending-list">
-                    <li>
-                        <div class="trend-info">
-                            <strong>Local LLM wrapper in Electron</strong>
-                            <span>1,204 upvotes this week</span>
-                        </div>
-                    </li>
-                    <li>
-                        <div class="trend-info">
-                            <strong>Hybrid Engine Data Visualizer</strong>
-                            <span>842 upvotes this week</span>
-                        </div>
-                    </li>
-                    <li>
-                        <div class="trend-info">
-                            <strong>Open Source Notion Alternative</strong>
-                            <span>503 upvotes this week</span>
-                        </div>
-                    </li>
+                    <li><div class="trend-info"><strong>Local LLM wrapper in Electron</strong><span>1,204 upvotes</span></div></li>
                 </ul>
-            </div>
-
-            <div class="card widget animate-fade-in" style="animation-delay: 0.5s;">
-                <h3>💰 Active Bounties</h3>
-                <ul class="bounty-list">
-                    <li>
-                        <div class="bounty-icon"><i class="ph-fill ph-currency-dollar"></i></div>
-                        <div class="bounty-info">
-                            <strong>Python Backend Script Fix</strong>
-                            <span>$50 Pool • Open for devs</span>
-                        </div>
-                    </li>
-                    <li>
-                        <div class="bounty-icon"><i class="ph-fill ph-currency-dollar"></i></div>
-                        <div class="bounty-info">
-                            <strong>Firebase Auth Implementation</strong>
-                            <span>$120 Pool • Open for devs</span>
-                        </div>
-                    </li>
-                </ul>
-            </div>
-            
-            <div class="mini-footer animate-fade-in" style="animation-delay: 0.6s;">
-                Nerd Arena © 2024 • Privacy • Terms • API
             </div>
         </aside>
-
     </main>
 
-    <nav class="bottom-nav animate-fade-in" style="animation-delay: 0.2s;">
-        <a href="#" class="active"><i class="ph-fill ph-terminal-window"></i></a>
+    <nav class="bottom-nav animate-fade-in">
+        <a href="index.html" class="active"><i class="ph-fill ph-terminal-window"></i></a>
         <a href="#"><i class="ph ph-magnifying-glass"></i></a>
-        <a href="#" class="nav-center-btn"><i class="ph-fill ph-plus"></i></a>
+        <a href="#" class="nav-center-btn" onclick="document.querySelector('.create-post textarea').focus();"><i class="ph-fill ph-plus"></i></a>
         <a href="#"><i class="ri-notification-3-line"></i></a>
-        <a href="#"><i class="ph ph-user"></i></a>
+        <a href="profile.html"><i class="ph ph-user"></i></a>
     </nav>
 
+    <script type="module" src="pload.js"></script>
+    <script type="module" src="app.js"></script>
 </body>
 </html>

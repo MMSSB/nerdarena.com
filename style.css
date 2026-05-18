@@ -536,3 +536,292 @@ p, h1, h2, h3, h4, h5, h6, span, strong, div {
     
     .profile-tabs { margin-bottom: 16px; }
 }
+
+
+
+
+/* --- Dropdown Menu --- */
+.dropdown-container { position: relative; cursor: pointer; }
+.dropdown-menu {
+    position: absolute; top: 120%; right: 0; width: 200px;
+    background: var(--card-bg); border: 1px solid var(--border-color);
+    border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    display: none; flex-direction: column; padding: 8px; z-index: 1000;
+}
+.dropdown-menu.show { display: flex; animation: fadeInUp 0.2s ease; }
+.dropdown-menu a {
+    padding: 10px 15px; color: var(--text-main); font-weight: 600; font-size: 0.9rem;
+    display: flex; align-items: center; gap: 10px; border-radius: 8px; transition: var(--transition);
+}
+.dropdown-menu a:hover { background: var(--bg-color); color: var(--primary-color); }
+.dropdown-divider { height: 1px; background: var(--border-color); margin: 8px 0; }
+.text-danger { color: #dc2626 !important; }
+.text-danger:hover { background: #fef2f2 !important; color: #b91c1c !important; }
+
+/* --- Settings Page --- */
+.settings-container { max-width: 600px; margin: 40px auto; padding: 20px; }
+.settings-card { padding: 30px; }
+.avatar-picker { display: flex; gap: 15px; margin-bottom: 20px; }
+.avatar-option {
+    width: 50px; height: 50px; border-radius: 12px; cursor: pointer;
+    border: 3px solid transparent; transition: var(--transition);
+}
+.avatar-option.selected { border-color: var(--text-main); transform: scale(1.1); }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ========================================= */
+/* --- SETTINGS: EDIT MODE & MODALS ---      */
+/* ========================================= */
+
+/* Editable Regions */
+.editable-region {
+    position: relative;
+    cursor: pointer;
+    overflow: hidden;
+}
+.edit-overlay {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.5); color: white;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    font-weight: 600; font-size: 0.95rem; opacity: 0; transition: var(--transition);
+    z-index: 10;
+}
+.edit-overlay i { font-size: 1.5rem; margin-bottom: 5px; }
+.editable-region:hover .edit-overlay { opacity: 1; }
+.edit-overlay.round { border-radius: 50%; }
+
+/* Settings Form Panels */
+.settings-panel {
+    background: var(--card-bg); border-radius: var(--radius);
+    border: 1px solid var(--border-color); padding: 24px;
+    margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+}
+.settings-panel-header {
+    display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 20px;
+}
+.settings-panel-header h3 { font-size: 1.1rem; color: var(--text-main); }
+.settings-text-row { margin-bottom: 15px; }
+.settings-text-row label { display: block; font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-bottom: 5px; }
+.settings-text-row p { font-size: 1rem; color: var(--text-main); font-weight: 500; }
+
+/* Modals */
+.modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(17, 24, 39, 0.6); backdrop-filter: blur(4px);
+    display: none; justify-content: center; align-items: center; z-index: 2000;
+    opacity: 0; transition: opacity 0.3s ease;
+}
+.modal-overlay.active { display: flex; opacity: 1; }
+.modal-box {
+    background: var(--card-bg); width: 100%; max-width: 500px;
+    border-radius: 16px; box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    transform: translateY(20px); transition: transform 0.3s ease;
+    max-height: 90vh; overflow-y: auto;
+}
+.modal-overlay.active .modal-box { transform: translateY(0); }
+.modal-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 20px 24px; border-bottom: 1px solid var(--border-color);
+}
+.modal-header h3 { font-size: 1.2rem; color: var(--text-main); }
+.close-modal { font-size: 1.5rem; color: var(--text-muted); cursor: pointer; transition: var(--transition); }
+.close-modal:hover { color: #dc2626; transform: rotate(90deg); }
+.modal-body { padding: 24px; }
+
+/* Image Library Picker */
+.library-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; }
+.library-item {
+    height: 80px; border-radius: 10px; cursor: pointer; border: 3px solid transparent;
+    background-size: cover; background-position: center; transition: var(--transition);
+}
+.library-item:hover { transform: scale(1.05); }
+.library-item.selected { border-color: var(--primary-color); box-shadow: 0 0 15px rgba(99, 102, 241, 0.4); }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ========================================= */
+/* --- ENHANCED SETTINGS & COFFEE MODALS --- */
+/* ========================================= */
+
+/* Enhanced Input UI */
+.input-group label {
+    font-size: 0.85rem; font-weight: 700; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; display: block;
+}
+.input-group input, .input-group textarea {
+    width: 100%; padding: 14px 16px; border-radius: 12px;
+    border: 2px solid var(--border-color); background-color: #f8fafc;
+    font-size: 1rem; font-weight: 500; color: var(--text-main);
+    transition: all 0.25s ease; outline: none; margin-bottom: 20px;
+}
+.input-group input:focus, .input-group textarea:focus {
+    background-color: var(--card-bg); border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+}
+
+/* Coffee-Style Modals */
+.coffee-modal {
+    background: var(--card-bg); width: 100%; max-width: 550px;
+    border-radius: 20px; box-shadow: 0 25px 50px rgba(0,0,0,0.25);
+    display: flex; flex-direction: column; max-height: 85vh;
+}
+.coffee-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 20px 24px 10px 24px;
+}
+.coffee-header h3 { font-size: 1.3rem; font-weight: 800; color: var(--text-main); }
+.coffee-close { font-size: 1.5rem; cursor: pointer; color: var(--text-muted); transition: 0.2s; }
+.coffee-close:hover { color: #dc2626; transform: rotate(90deg); }
+
+/* Tabs */
+.coffee-tabs {
+    display: flex; justify-content: center; gap: 20px;
+    border-bottom: 1px solid var(--border-color); padding: 0 24px; margin-bottom: 20px;
+}
+.coffee-tabs span {
+    padding: 10px 5px; font-weight: 600; color: var(--text-muted); cursor: pointer;
+    border-bottom: 3px solid transparent; transition: 0.2s; font-size: 0.95rem;
+}
+.coffee-tabs span:hover { color: var(--text-main); }
+.coffee-tabs span.active { color: var(--primary-color); border-bottom-color: var(--primary-color); }
+
+/* Image Grid */
+.coffee-grid-container {
+    padding: 0 24px; overflow-y: auto; flex: 1;
+}
+.coffee-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 15px;
+}
+.grid-img-item {
+    height: 100px; border-radius: 14px; cursor: pointer; border: 3px solid transparent;
+    background-size: cover; background-position: center; transition: 0.2s;
+}
+.grid-img-item:hover { transform: scale(1.05); }
+.grid-img-item.selected { border-color: var(--primary-color); box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2); }
+
+/* Footer Buttons */
+.coffee-footer {
+    padding: 20px 24px; display: flex; gap: 15px; border-top: 1px solid var(--border-color);
+}
+.btn-save-modal {
+    flex: 2; background: var(--primary-color); color: white; border-radius: 12px;
+    padding: 14px; font-weight: 700; font-size: 1rem; display: flex; justify-content: center; align-items: center; gap: 8px;
+}
+.btn-save-modal:hover { background: var(--primary-hover); transform: translateY(-2px); }
+.btn-cancel-modal {
+    flex: 1; background: transparent; border: 2px solid var(--border-color); color: var(--text-main);
+    border-radius: 12px; padding: 14px; font-weight: 700; font-size: 1rem;
+}
+.btn-cancel-modal:hover { background: var(--bg-color); border-color: var(--text-muted); }
+
+
+
+
+
+
+/* ========================================= */
+/* --- ENHANCED SETTINGS & COFFEE MODALS --- */
+/* ========================================= */
+
+/* Enhanced Input UI */
+.input-group label {
+    font-size: 0.85rem; font-weight: 700; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; display: block;
+}
+.input-group input, .input-group textarea {
+    width: 100%; padding: 14px 16px; border-radius: 12px;
+    border: 2px solid var(--border-color); background-color: #f8fafc;
+    font-size: 1rem; font-weight: 500; color: var(--text-main);
+    transition: all 0.25s ease; outline: none; margin-bottom: 20px;
+}
+.input-group input:focus, .input-group textarea:focus {
+    background-color: var(--card-bg); border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+}
+
+/* Coffee-Style Modals */
+.coffee-modal {
+    background: var(--card-bg); width: 100%; max-width: 550px;
+    border-radius: 20px; box-shadow: 0 25px 50px rgba(0,0,0,0.25);
+    display: flex; flex-direction: column; max-height: 85vh;
+}
+.coffee-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 20px 24px 10px 24px;
+}
+.coffee-header h3 { font-size: 1.3rem; font-weight: 800; color: var(--text-main); }
+.coffee-close { font-size: 1.5rem; cursor: pointer; color: var(--text-muted); transition: 0.2s; }
+.coffee-close:hover { color: #dc2626; transform: rotate(90deg); }
+
+/* Tabs */
+.coffee-tabs {
+    display: flex; justify-content: center; gap: 20px;
+    border-bottom: 1px solid var(--border-color); padding: 0 24px; margin-bottom: 20px;
+}
+.coffee-tabs span {
+    padding: 10px 5px; font-weight: 600; color: var(--text-muted); cursor: pointer;
+    border-bottom: 3px solid transparent; transition: 0.2s; font-size: 0.95rem;
+}
+.coffee-tabs span:hover { color: var(--text-main); }
+.coffee-tabs span.active { color: var(--primary-color); border-bottom-color: var(--primary-color); }
+
+/* Image Grid */
+.coffee-grid-container {
+    padding: 0 24px; overflow-y: auto; flex: 1;
+}
+.coffee-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 15px;
+}
+.grid-img-item {
+    height: 100px; border-radius: 14px; cursor: pointer; border: 3px solid transparent;
+    background-size: cover; background-position: center; transition: 0.2s;
+}
+.grid-img-item:hover { transform: scale(1.05); }
+.grid-img-item.selected { border-color: var(--primary-color); box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2); }
+
+/* Footer Buttons */
+.coffee-footer {
+    padding: 20px 24px; display: flex; gap: 15px; border-top: 1px solid var(--border-color); margin-top: 10px;
+}
+.btn-save-modal {
+    flex: 2; background: var(--primary-color); color: white; border-radius: 12px;
+    padding: 14px; font-weight: 700; font-size: 1rem; display: flex; justify-content: center; align-items: center; gap: 8px;
+}
+.btn-save-modal:hover { background: var(--primary-hover); transform: translateY(-2px); }
+.btn-cancel-modal {
+    flex: 1; background: transparent; border: 2px solid var(--border-color); color: var(--text-main);
+    border-radius: 12px; padding: 14px; font-weight: 700; font-size: 1rem;
+}
+.btn-cancel-modal:hover { background: var(--bg-color); border-color: var(--text-muted); }

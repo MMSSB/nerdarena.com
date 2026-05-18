@@ -1,46 +1,100 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // 1. Setup Dynamic Mobile Navigation
-    const navButtons = document.querySelectorAll('.bottom-nav .nav-item[data-target]');
-    const appViews = document.querySelectorAll('.app-view');
+import { auth, db } from './firebase.js';
+import { collection, addDoc, query, orderBy, onSnapshot, doc, updateDoc, deleteDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-    navButtons.forEach(button => {
-        button.addEventListener('click', (e) => {
-            // Prevent default action
-            e.preventDefault();
-
-            // Get target view ID
-            const targetViewId = button.getAttribute('data-target');
-            if (!targetViewId) return;
-
-            // Remove active class from all buttons
-            document.querySelectorAll('.bottom-nav .nav-item').forEach(btn => {
-                btn.classList.remove('active');
-            });
-
-            // Add active class to clicked button
-            button.classList.add('active');
-
-            // Hide all views
-            appViews.forEach(view => {
-                view.classList.remove('active-view');
-            });
-
-            // Show target view
-            const targetView = document.getElementById(targetViewId);
-            if (targetView) {
-                targetView.classList.add('active-view');
-                // Scroll to top when switching views
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
-        });
-    });
-
-    // 2. Auto-Resize Textarea (Dynamic Input flexibility)
-    const textareas = document.querySelectorAll('textarea');
-    textareas.forEach(textarea => {
-        textarea.addEventListener('input', function() {
-            this.style.height = 'auto'; // Reset height
-            this.style.height = (this.scrollHeight) + 'px'; // Set to scroll height
-        });
-    });
+document.addEventListener('userDataLoaded', () => {
+    updateCreatePostUI(window.currentUserData);
+    loadFeed();
 });
+
+function updateCreatePostUI(user) {
+    const createBoxAvatar = document.querySelector('.create-post .avatar-text');
+    if (createBoxAvatar) {
+        createBoxAvatar.innerText = user.fullname.substring(0, 2).toUpperCase();
+        createBoxAvatar.className = `avatar-text ${user.avatarClass || 'bg-primary'}`;
+    }
+}
+
+function formatContent(text) {
+    let safe = text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    safe = safe.replace(/```([\s\S]*?)```/g, '<div class="code-block"><pre><code>$1</code></pre></div>');
+    safe = safe.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    safe = safe.replace(/(^|[^\"])(https?:\/\/[^\s]+)/g, '$1<a href="$2" target="_blank" style="color:var(--primary-color);">$2</a>');
+    return safe.replace(/\n/g, '<br>');
+}
+
+const btnPost = document.querySelector('.btn-post');
+const postTextarea = document.querySelector('.create-post textarea');
+
+if (btnPost && postTextarea) {
+    btnPost.addEventListener('click', async () => {
+        const content = postTextarea.value.trim();
+        if (!content || !window.currentUserData) return;
+        btnPost.disabled = true; btnPost.innerText = "Pitching...";
+        try {
+            await addDoc(collection(db, "posts"), {
+                authorId: window.currentUserData.uid,
+                authorName: window.currentUserData.fullname,
+                authorUsername: window.currentUserData.username,
+                authorAvatarClass: window.currentUserData.avatarClass || 'bg-primary',
+                content: content, likedBy: [], commentsCount: 0,
+                timestamp: new Date().toISOString()
+            });
+            postTextarea.value = ''; 
+        } catch (e) { console.error(e); } 
+        finally { btnPost.disabled = false; btnPost.innerText = "Pitch Idea"; }
+    });
+}
+
+function loadFeed() {
+    const feedContainer = document.querySelector('.main-feed');
+    const createPostBox = document.querySelector('.create-post');
+    onSnapshot(query(collection(db, "posts"), orderBy("timestamp", "desc")), (snapshot) => {
+        feedContainer.innerHTML = '';
+        if (createPostBox) feedContainer.appendChild(createPostBox);
+        snapshot.forEach((docSnap) => {
+            const post = docSnap.data();
+            const isLiked = post.likedBy && post.likedBy.includes(auth.currentUser.uid);
+            const isMyPost = post.authorId === auth.currentUser.uid;
+            const el = document.createElement('div');
+            el.className = 'card post animate-fade-in';
+            el.innerHTML = `
+                <div class="post-header">
+                    <div class="post-author" style="cursor:pointer;" onclick="goToProfile('${post.authorId}')">
+                        <div class="avatar-text ${post.authorAvatarClass || 'bg-blue'}">${post.authorName.substring(0,2).toUpperCase()}</div>
+                        <div class="author-info"><strong>${post.authorName}</strong> <span class="badge badge-idea">💡 Dev</span></div>
+                    </div>
+                    ${isMyPost ? `<button class="btn-more delete-post-btn" data-id="${docSnap.id}"><i class="ri-delete-bin-line" style="color:#ef4444;"></i></button>` : ''}
+                </div>
+                <div class="post-content"><p>${formatContent(post.content)}</p></div>
+                <div class="post-footer">
+                    <div class="likes ${isLiked ? '' : 'unliked'}" data-id="${docSnap.id}" data-liked="${isLiked}">
+                        <i class="${isLiked ? 'ph-fill' : 'ph'} ph-rocket"></i> Upvote <span>${post.likedBy ? post.likedBy.length : 0}</span>
+                    </div>
+                </div>
+            `;
+            feedContainer.appendChild(el);
+        });
+        attachListeners();
+    });
+}
+
+function attachListeners() {
+    document.querySelectorAll('.likes').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            const id = e.currentTarget.getAttribute('data-id');
+            const isLiked = e.currentTarget.getAttribute('data-liked') === 'true';
+            if (isLiked) await updateDoc(doc(db, "posts", id), { likedBy: arrayRemove(auth.currentUser.uid) });
+            else await updateDoc(doc(db, "posts", id), { likedBy: arrayUnion(auth.currentUser.uid) });
+        });
+    });
+    document.querySelectorAll('.delete-post-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            if(confirm("Delete pitch?")) await deleteDoc(doc(db, "posts", e.currentTarget.getAttribute('data-id')));
+        });
+    });
+}
+
+window.goToProfile = function(userId) {
+    if (auth.currentUser && auth.currentUser.uid === userId) window.location.href = 'profile.html';
+    else window.location.href = `user.html?id=${userId}`;
+}

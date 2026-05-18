@@ -26,7 +26,7 @@
             <button class="icon-btn hide-mobile"><i class="ri-message-3-line"></i></button>
             <button class="icon-btn hide-mobile"><i class="ri-notification-3-line"></i></button>
             <div class="user-profile">
-                <div class="avatar-text bg-primary">MMS</div>
+                <div class="avatar-text bg-primary">...</div>
             </div>
         </div>
     </header>
@@ -41,13 +41,13 @@
                 
                 <div class="hero-info-bar">
                     <div class="avatar-wrapper">
-                        <div class="profile-avatar bg-primary">MMS</div>
+                        <div class="profile-avatar bg-primary">...</div>
                     </div>
                     
                     <div class="user-meta-details">
                         <div class="name-stats">
-                            <h2>Mahmoud M. S.</h2>
-                            <span class="user-stats"><i class="ph-bold ph-users-three"></i> 892 Backers • 14 Shipped</span>
+                            <h2>Loading Profile...</h2>
+                            <span class="user-stats"><i class="ph-bold ph-users-three"></i> ...</span>
                         </div>
                         <div class="profile-actions">
                             <button class="btn-action btn-solid"><i class="ri-edit-line"></i> Edit Profile</button>
@@ -68,7 +68,6 @@
             <div class="profile-grid">
                 
                 <aside class="profile-sidebar animate-fade-in" style="animation-delay: 0.3s;">
-                    
                     <div class="card widget-card">
                         <h3><i class="ph-bold ph-gear"></i> Dev Blueprint</h3>
                         <div class="blueprint-actions">
@@ -96,7 +95,7 @@
                     
                     <div class="card create-post">
                         <div class="post-input-wrapper">
-                            <div class="avatar-text bg-primary">MMS</div>
+                            <div class="avatar-text bg-primary">...</div>
                             <textarea placeholder="Pitch a new architecture variant or update your stack roadmap..." rows="2"></textarea>
                         </div>
                         <div class="post-actions">
@@ -109,32 +108,7 @@
                         </div>
                     </div>
 
-                    <div class="card post">
-                        <div class="post-header">
-                            <div class="post-author">
-                                <div class="avatar-text bg-primary">MMS</div>
-                                <div class="author-info">
-                                    <strong>Mahmoud M. S.</strong> 
-                                    <span class="badge badge-idea">💡 Brainstorming</span>
-                                    <span class="post-time">Just now</span>
-                                </div>
-                            </div>
-                            <button class="btn-more"><i class="ri-more-fill"></i></button>
-                        </div>
-                        <div class="post-content">
-                            <h3>Redesigning the Main Feed Architecture</h3>
-                            <p>Just pushed an update to how the CSS Grid handles responsive containers. We're now locking the viewport height natively and using standard overflow properties to give it that native app feel on mobile devices.</p>
-                        </div>
-                        <div class="post-footer">
-                            <div class="likes unliked"><i class="ph ph-rocket"></i> Upvote <span>12</span></div>
-                            <div class="comments-shares">
-                                <span><i class="ri-git-pull-request-line"></i> Features <span>3</span></span>
-                                <span class="support-text"><i class="fa-solid fa-mug-hot"></i> Back Idea</span>
-                            </div>
-                        </div>
-                    </div>
-
-                </section>
+                    </section>
             </div>
         </div>
     </main>
@@ -142,10 +116,11 @@
     <nav class="bottom-nav animate-fade-in" style="animation-delay: 0.2s;">
         <a href="index.html"><i class="ph-fill ph-terminal-window"></i></a>
         <a href="#"><i class="ph ph-magnifying-glass"></i></a>
-        <a href="#" class="nav-center-btn"><i class="ph-fill ph-plus"></i></a>
+        <a href="#" class="nav-center-btn" onclick="document.querySelector('.create-post textarea').focus();"><i class="ph-fill ph-plus"></i></a>
         <a href="#"><i class="ri-notification-3-line"></i></a>
         <a href="profile.html" class="active"><i class="ph-fill ph-user"></i></a>
     </nav>
 
+    <script type="module" src="profile.js"></script>
 </body>
 </html>
