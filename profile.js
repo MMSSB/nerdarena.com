@@ -526,7 +526,6 @@
 
 
 
-
 // profile.js
 import { auth, db } from './firebase.js';
 import { doc, getDoc, collection, addDoc, query, where, onSnapshot, updateDoc, deleteDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
@@ -538,7 +537,7 @@ document.addEventListener('userDataLoaded', () => {
     setupMarkdownButtons();
     initGlobalPostListeners();
     loadMyPosts(auth.currentUser.uid);
-    loadMyNetwork(auth.currentUser.uid);      // ✅ Real‑time followers listener
+    loadMyNetwork(auth.currentUser.uid);
 });
 
 document.addEventListener('userProfileUpdated', () => {
@@ -581,8 +580,18 @@ function updateCreatePostUI() {
                 profileAvatar.innerText = user.fullname.substring(0, 2).toUpperCase();
             }
         }
+        
+        // --- THE FIX: Added Username & Followers Stats Injection ---
         const nameH2 = document.querySelector('.name-stats h2');
-        if (nameH2) nameH2.innerText = user.fullname;
+        if (nameH2) nameH2.innerText = `${user.fullname} (@${user.username})`;
+        
+        const userStats = document.querySelector('.user-stats');
+        if (userStats) {
+            const followersCount = user.followers ? user.followers.length : 0;
+            userStats.innerHTML = `<i class="ph-bold ph-users-three"></i> ${followersCount} Backers`;
+        }
+        // -----------------------------------------------------------
+
         const coverBanner = document.querySelector('.cover-banner');
         if (coverBanner && user.coverStyle) {
             coverBanner.style.background = user.coverStyle;
@@ -627,50 +636,46 @@ if (btnPost) {
     });
 }
 
-// ----- TAB SWITCHING (FIXED) -----
+// ----- TAB SWITCHING -----
 document.querySelectorAll('.tab-item').forEach((tab, index) => {
     tab.addEventListener('click', () => {
         document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
         document.querySelectorAll('.profile-tab-content').forEach(c => c.classList.remove('active'));
         tab.classList.add('active');
         
-        // Tab indices based on profile.html order:
-        // 0: Posts, 1: Network, 2: Architecture, 3: Repositories, 4: Stack Blueprint
         if (index === 0) document.getElementById('tab-pitches').classList.add('active');
-        if (index === 1) {
-            document.getElementById('tab-network').classList.add('active');
-            // No need to reload, real‑time listener already updates the container
-        }
-        if (index === 2) document.getElementById('tab-architecture').classList.add('active');
-        if (index === 3) {
+        if (index === 1) document.getElementById('tab-network').classList.add('active');
+        if (index === 3) document.getElementById('tab-architecture').classList.add('active');
+        if (index === 2) {
             document.getElementById('tab-repositories').classList.add('active');
             const githubUser = window.currentUserData?.github;
             const hiddenRepos = window.currentUserData?.hiddenRepos || [];
-            fetchAndRenderRepos(githubUser, 'repos-container', true, hiddenRepos, async () => {
-                // After toggling, fetch the latest user data from Firestore and re-render
-                const userDoc = await getDoc(doc(db, "users", auth.currentUser.uid));
-                if (userDoc.exists()) {
-                    const latestHidden = userDoc.data().hiddenRepos || [];
-                    fetchAndRenderRepos(githubUser, 'repos-container', true, latestHidden, () => {});
-                }
-            });
+            
+            fetchAndRenderRepos(githubUser, 'repos-container', true, hiddenRepos);
         }
         if (index === 4) document.getElementById('tab-stack').classList.add('active');
     });
 });
 
-// ✅ Real‑time followers (backers) – updates automatically
 function loadMyNetwork(uid) {
     const networkContainer = document.getElementById('network-container');
     if (!networkContainer) return;
     
-    const q = query(collection(db, "users"));
-    onSnapshot(q, (snapshot) => {
+    onSnapshot(query(collection(db, "users")), (snapshot) => {
+        let myFollowers = [];
+        
+        snapshot.forEach(docSnap => {
+            if (docSnap.data().uid === uid) {
+                myFollowers = docSnap.data().followers || [];
+            }
+        });
+
         networkContainer.innerHTML = '';
         let hasFollowers = false;
+
         snapshot.forEach((docSnap) => {
             const user = docSnap.data();
-            if (user.uid !== uid && user.followers && user.followers.includes(uid)) {
+            if (myFollowers.includes(user.uid)) {
                 hasFollowers = true;
                 const card = document.createElement('div');
                 card.className = 'network-card';
@@ -682,7 +687,8 @@ function loadMyNetwork(uid) {
                 networkContainer.appendChild(card);
             }
         });
-        if (!hasFollowers) networkContainer.innerHTML = '<p style="color:var(--text-muted); grid-column:1/-1;">No backers yet.</p>';
+        
+        if (!hasFollowers) networkContainer.innerHTML = '<p style="color:var(--text-muted); grid-column:1/-1;">No backers yet. Keep pitching!</p>';
     });
 }
 
