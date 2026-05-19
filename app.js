@@ -218,7 +218,7 @@ function calculateSmartTrends(posts, widgetContainer) {
         widgetContainer.innerHTML = '<li><span style="color:var(--text-muted);font-size:0.85rem;">No trending ideas yet.</span></li>'; return;
     }
     topTrends.forEach(trend => {
-        widgetContainer.innerHTML += `<li onclick="window.location.href='post.html?id=${trend.id}'"><div class="trend-info"><strong>${trend.content.substring(0, 35)}...</strong><span><i class="ph-fill ph-rocket"></i> ${trend.likes} • Smart Rank</span></div></li>`;
+        widgetContainer.innerHTML += `<li onclick="window.location.href='nerdarena.com/post.html?id=${trend.id}'"><div class="trend-info"><strong>${trend.content.substring(0, 35)}...</strong><span><i class="ph-fill ph-rocket"></i> ${trend.likes} • Smart Rank</span></div></li>`;
     });
 }
 

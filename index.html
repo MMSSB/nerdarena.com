@@ -9,6 +9,13 @@
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <link rel="stylesheet" href="style.css">
     <script src="theme.js"></script>
+    <style>
+        @media (max-width: 768px) {
+    .sidebar-nav {
+        display: none;
+    }
+}
+    </style>
 </head>
 <body>
 
@@ -16,7 +23,7 @@
          <a href="index.html"><div class="logo"><i class="ph-fill ph-code"></i> <span>Nerd Arena</span></div></a>
 
         <div class="search-container">
-            <span class="search-icon"><i class="ph ph-magnifying-glass"></i></span>
+            <!-- <span class="search-icon"><i class="ph ph-magnifying-glass"></i></span> -->
             <input type="text" placeholder="Search ideas, tech stacks, or nerds...">
         </div>
         
@@ -24,6 +31,7 @@
             <button class="icon-btn show-mobile-only"><i class="ph ph-magnifying-glass"></i></button>
             <button class="icon-btn hide-mobile"><i class="ri-message-3-line"></i></button>
             <button class="icon-btn hide-mobile"><i class="ri-notification-3-line"></i></button>
+            <!-- <button class="icon-btn show-mobile-only" id="mobile-menu-btn"><i class="ri-menu-line"></i></button> -->
             
             <div class="user-profile dropdown-container" id="nav-user-container">
                 <div class="avatar-text bg-primary" id="nav-avatar">...</div>
