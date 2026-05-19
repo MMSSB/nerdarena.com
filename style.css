@@ -2848,7 +2848,7 @@ div {
         animation: dockSpringUp 0.8s var(--spring-bounce) forwards;
     }
 
-    /* The Frosted Glass Pill */
+/* The Frosted Glass Pill */
     .glass-pill {
         display: flex;
         justify-content: space-between;
@@ -2857,13 +2857,18 @@ div {
         padding: 12px 20px;
         border-radius: 50px;
         
-        /* Modern Glassmorphism */
-        /* background: #ffffff7e; */
-        background: rgba(255, 255, 255, 0.75);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
+        /* Modern Glassmorphism Fix */
+        background: rgba(255, 255, 255, 0.65);
+        backdrop-filter: blur(16px) saturate(180%);
+        -webkit-backdrop-filter: blur(16px) saturate(180%);
         
-        border: 1px solid rgba(255, 255, 255, 0.6);
+        /* --- ADD THESE 3 LINES TO PREVENT BLUR DROPPING --- */
+        transform: translateZ(0);
+        -webkit-transform: translateZ(0);
+        will-change: backdrop-filter, transform;
+        /* -------------------------------------------------- */
+        
+        border: 1px solid rgba(255, 255, 255, 0.5);
         box-shadow: 
             0 12px 35px rgba(0, 0, 0, 0.08), 
             inset 0 1px 0 rgba(255, 255, 255, 0.8);
@@ -2871,14 +2876,17 @@ div {
 
     /* Dark Mode Glass */
     [data-theme="dark"] .glass-pill {
-
-        background: #2727277e;
-          /* backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px); */
-            
-
-        /* background: rgba(30, 41, 59, 0.65); */
-        border-color: rgba(255, 255, 255, 0.08);
+        background: rgba(30, 41, 59, 0.65);
+        backdrop-filter: blur(16px) saturate(180%);
+        -webkit-backdrop-filter: blur(16px) saturate(180%);
+        
+        /* --- FORCES GRAPHICS CARD TO RENDER THE BLUR --- */
+        transform: translateZ(0);
+        -webkit-transform: translateZ(0);
+        will-change: backdrop-filter, transform;
+        /* ----------------------------------------------- */
+        
+        border: 1px solid rgba(255, 255, 255, 0.08);
         box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
     }
 
@@ -2954,7 +2962,7 @@ div {
 }
 
 /* Adjust layout on tiny screens */
-@media (max-width: 380px) {
+/* @media (max-width: 380px) {
     .floating-dock-container {
         gap: 8px;
         width: 95%;
@@ -2970,10 +2978,28 @@ div {
         min-width: 54px;
         border-width: 3px;
     }
+} */
+
+
+/* Adjust layout on tiny screens */
+@media (max-width: 380px) {
+    .floating-dock-container {
+        gap: 8px;
+        width: 95%;
+    }
+    .glass-pill {
+        padding: 10px 16px;
+        /* Keep it consistent with the new main blur */
+        backdrop-filter: blur(16px) saturate(180%);
+        -webkit-backdrop-filter: blur(16px) saturate(180%);
+    }
+    .action-sphere {
+        width: 54px;
+        height: 54px;
+        min-width: 54px;
+        border-width: 3px;
+    }
 }
-
-
-
 
 
 
