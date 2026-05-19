@@ -78,7 +78,7 @@
                 <li onclick="window.location.href='settings.html'"><i class="ri-settings-4-line icon"></i> Settings</li>
             </ul>
         </aside>
-
+<!-- 
         <section class="main-feed">
             <div class="card create-post animate-fade-in">
                 <div class="post-input-wrapper">
@@ -93,8 +93,32 @@
                     <button class="btn-post">Post Idea</button>
                 </div>
             </div>
-            </section>
+            </section> -->
+<section class="main-feed">
+            
+            <div class="feed-header animate-fade-in" id="greeting-wrapper">
+                <h2 id="smart-greeting-text">Loading...</h2>
+                <!-- <p>Ready to build something amazing today?</p> -->
+            </div>
+            <br>
 
+            <div class="card create-post animate-fade-in">
+                <div class="post-input-wrapper">
+                    <div class="avatar-text bg-primary">...</div>
+                    <textarea placeholder="Post your idea, architecture, or project roadmap..." rows="2"></textarea>
+                </div>
+                <div class="post-actions">
+                    <div class="action-icons">
+                        <span title="Add Code Snippet"><i class="ph ph-code-block"></i></span> 
+                        <span title="Format Markdown"><i class="ph ph-text-b"></i></span> 
+                    </div>
+                    <button class="btn-post">Post Idea</button>
+                </div>
+            </div>
+            
+            <div id="feed-posts-container"></div>
+
+        </section>
         <aside class="sidebar-widgets">
             
             <div class="card widget animate-fade-in">
@@ -155,6 +179,8 @@
 </div>
     <script type="module" src="gdrive.js"></script>
     <script type="module" src="pload.js"></script>
+<script type="module" src="greetings.js"></script>
     <script type="module" src="app.js"></script>
 </body>
+</html></body>
 </html>

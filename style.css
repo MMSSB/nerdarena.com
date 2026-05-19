@@ -774,7 +774,7 @@ div {
     }
 
     .post-footer {
-        flex-direction: column;
+        flex-direction:row;
         align-items: stretch;
         gap: 12px;
     }
@@ -2843,6 +2843,7 @@ div {
         z-index: 9999;
         width: 92%;
         max-width: 420px;
+        
         justify-content: center;
         animation: dockSpringUp 0.8s var(--spring-bounce) forwards;
     }
@@ -2857,10 +2858,10 @@ div {
         border-radius: 50px;
         
         /* Modern Glassmorphism */
-        background: #ffffff7e;
-        /* background: rgba(255, 255, 255, 0.75); */
-        backdrop-filter: blur(24px);
-        -webkit-backdrop-filter: blur(24px);
+        /* background: #ffffff7e; */
+        background: rgba(255, 255, 255, 0.75);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
         
         border: 1px solid rgba(255, 255, 255, 0.6);
         box-shadow: 
@@ -2870,7 +2871,12 @@ div {
 
     /* Dark Mode Glass */
     [data-theme="dark"] .glass-pill {
-        background: #27272769;
+
+        background: #2727277e;
+          /* backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px); */
+            
+
         /* background: rgba(30, 41, 59, 0.65); */
         border-color: rgba(255, 255, 255, 0.08);
         box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
@@ -2955,6 +2961,8 @@ div {
     }
     .glass-pill {
         padding: 10px 16px;
+             backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
     }
     .action-sphere {
         width: 54px;
@@ -2963,3 +2971,145 @@ div {
         border-width: 3px;
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* Mobile Post Footer Fixes */
+    .post-footer {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: nowrap; /* Forces them to stay side-by-side */
+    }
+
+    .likes, .comments-shares {
+        flex: 1; /* Both take exactly 50% width */
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        padding: 0;
+    }
+
+    .likes {
+        padding: 10px 5px;
+        border-radius: 12px;
+    }
+
+    .comments-shares span {
+        width: 100%;
+        justify-content: center;
+        padding: 5px 5px;
+        border-radius: 12px;
+        background: rgba(0,0,0,0.03); /* Subtle pill background */
+    }
+    
+    /* [data-theme="dark"] .comments-shares span {
+        background: rgba(255,255,255,0.05);
+    } */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.repo-stats i {
+    margin-right: 4px;
+    vertical-align: middle;
+}
+.visibility-btn {
+    margin-top: 12px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.visibility-btn.visible {
+    background: #e2e8f0;
+    color: #1e293b;
+}
+.visibility-btn.visible:hover {
+    background: #cbd5e1;
+}
+.visibility-btn.hidden {
+    background: #fee2e2;
+    color: #dc2626;
+}
+.visibility-btn.hidden:hover {
+    background: #fecaca;
+}
+
+
+    /* --- GitHub Repo Cards --- */
+.repo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+}
+.repo-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    padding: 20px;
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: var(--transition);
+}
+.repo-card:hover { border-color: var(--primary-color); transform: translateY(-3px); }
+
+.repo-card h4 { font-size: 1.1rem; color: var(--text-main); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+.repo-card p { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px; flex-grow: 1; }
+.repo-stats { display: flex; gap: 15px; font-size: 0.8rem; color: var(--text-muted); font-weight: 600; }
+.repo-card .visibility-btn {
+    margin-top: 15px; padding: 8px; border-radius: 8px; font-size: 0.8rem; font-weight: 700;
+    cursor: pointer; background: var(--bg-color); border: 1px solid var(--border-color);
+}
+.repo-card .visibility-btn.hidden { background: #fee2e2; color: #dc2626; border-color: #fecaca; }
+.repo-card .visibility-btn.visible { background: #dcfce7; color: #166534; border-color: #bbf7d0; }

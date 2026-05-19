@@ -3,82 +3,298 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nerd Arena | App Settings</title>
+    <title>Nerd Arena | Settings</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
-    
     <script src="theme.js"></script> 
-    
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* ========================================= */
+/* --- NEW MODERN SETTINGS UI (APP-LIKE) --- */
+/* ========================================= */
+
+.feed-header {
+    margin-bottom: 20px;
+    padding: 0 5px;
+}
+.feed-header h2 {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--text-main);
+    margin-bottom: 4px;
+}
+.feed-header p {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+}
+
+.settings-section-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 25px 0 10px 15px;
+}
+
+/* Rounded App Groups */
+.settings-group {
+    background: var(--card-bg);
+    border-radius: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+}
+
+/* Settings List (iOS Style) */
+.list-group .list-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--card-bg);
+    transition: 0.2s;
+}
+.list-group .list-item:last-child {
+    border-bottom: none;
+}
+.list-group .list-item.clickable {
+    cursor: pointer;
+}
+.list-group .list-item.clickable:hover {
+    background: var(--bg-color);
+}
+
+.list-item .item-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-main);
+}
+.list-item .item-left i {
+    font-size: 1.2rem;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 8px;
+    color: white;
+}
+
+/* Beautiful Icon Backgrounds */
+.icon-bg-blue { background: #3b82f6; }
+.icon-bg-purple { background: #8b5cf6; }
+.icon-bg-green { background: #10b981; }
+.icon-bg-gray { background: #64748b; }
+.icon-bg-orange { background: #f59e0b; }
+.icon-bg-primary { background: var(--primary-color); }
+
+/* Theme Selector Override */
+.theme-selector-grid { 
+    display: grid; 
+    grid-template-columns: repeat(3, 1fr); 
+    gap: 0;
+}
+.theme-card {
+    border: none;
+    border-right: 1px solid var(--border-color);
+    border-radius: 0;
+    padding: 20px 10px;
+    box-shadow: none;
+    background: transparent;
+}
+.theme-card:last-child { border-right: none; }
+.theme-card.active {
+    background: rgba(99, 102, 241, 0.05);
+    border-color: var(--border-color); /* keep grid line color */
+}
+
+/* Custom Color Picker UI */
+.custom-color-picker-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--bg-color);
+    padding: 6px 16px 6px 6px;
+    border-radius: 30px;
+    border: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: 0.2s;
+}
+.custom-color-picker-wrap:hover {
+    border-color: var(--primary-color);
+}
+.custom-color-picker-wrap span {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-muted);
+}
+.custom-color-picker-wrap input[type="color"] {
+    -webkit-appearance: none;
+    border: none;
+    width: 35px; 
+    height: 35px;
+    border-radius: 50%;
+    cursor: pointer;
+    padding: 0;
+    background: none;
+}
+.custom-color-picker-wrap input[type="color"]::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+.custom-color-picker-wrap input[type="color"]::-webkit-color-swatch {
+    border: none;
+    border-radius: 50%;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+
+
+    /* --- Modern Settings Select Dropdown --- */
+.modern-select {
+    appearance: none;
+    -webkit-appearance: none;
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    padding: 8px 35px 8px 15px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.2s;
+    /* Custom SVG dropdown arrow */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236b7280'%3E%3Cpath d='M12 15.6315L20.9679 6.66354L22.3821 8.07775L12 18.4599L1.61792 8.07775L3.03213 6.66354L12 15.6315Z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 14px;
+}
+
+.modern-select:hover, .modern-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+[data-theme="dark"] .modern-select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23cbd5e1'%3E%3Cpath d='M12 15.6315L20.9679 6.66354L22.3821 8.07775L12 18.4599L1.61792 8.07775L3.03213 6.66354L12 15.6315Z'/%3E%3C/svg%3E");
+}
+    </style>
 </head>
 <body>
 
     <header class="top-header">
-        <a href="index.html"><div class="logo"><i class="ph-fill ph-code"></i> <span>Nerd Arena</span></div></a>
-        <div class="header-actions">
+        <div style="display: flex; align-items: center; gap: 15px; ">
+            <button onclick="window.history.back()" class="icon-btn" style="padding: 5px;"><i class="ri-arrow-left-s-line" style="font-size: 1.8rem;"></i></button>
+            <h2 style="font-size: 1.2rem; margin: 0;">Settings</h2>
+        </div>
+        
+        <div class="header-actions" >
             <div class="user-profile dropdown-container" id="nav-user-container">
                 <div class="avatar-text bg-primary" id="nav-avatar">...</div>
-                <div class="dropdown-menu" id="nav-dropdown">
-                    <a href="profile.html"><i class="ri-user-line"></i> My Profile</a>
-                    <a href="index.html"><i class="ri-home-line"></i> Home</a>
-                    <a href="settings-account.html"><i class="ri-user-settings-line"></i> Account Settings</a>
-                    <div class="dropdown-divider"></div>
-                    <a href="#" id="logout-btn" class="text-danger"><i class="ri-logout-box-r-line"></i> Log Out</a>
-                </div>
             </div>
         </div>
     </header>
 
-    <main class="profile-scroll-wrapper">
-        <div class="settings-container" style="max-width: 800px;">
-            <div class="card settings-card animate-fade-in">
-                <h2><i class="ri-equalizer-line"></i> App Preferences</h2>
-                <p style="color: var(--text-muted); margin-top: 5px;">Customize your viewing experience and app behavior.</p>
-
-                <div class="settings-section-title">Appearance</div>
+    <main class="profile-scroll-wrapper" style="background-color: var(--bg-color);">
+        <div class="settings-container animate-fade-in" style="max-width: 700px; margin: 20px auto; padding: 0 15px 100px 15px;">
+            
+            <div class="settings-section-title">Appearance</div>
+            <div class="settings-group">
                 <div class="theme-selector-grid" id="theme-selector">
                     <div class="theme-card active" data-theme-val="light">
-                        <i class="ri-sun-line"></i>
-                        <span>Light Mode</span>
+                        <i class="ri-sun-line"></i><span>Light</span>
                     </div>
                     <div class="theme-card" data-theme-val="dark">
-                        <i class="ri-moon-clear-line"></i>
-                        <span>Dark Mode</span>
+                        <i class="ri-moon-clear-line"></i><span>Dark</span>
                     </div>
                     <div class="theme-card" data-theme-val="system">
-                        <i class="ri-computer-line"></i>
-                        <span>System Default</span>
+                        <i class="ri-computer-line"></i><span>System</span>
                     </div>
                 </div>
+            </div>
 
-                <div class="settings-section-title">Accent Color</div>
+            <div class="settings-section-title">Brand Color</div>
+            <div class="settings-group" style="padding: 20px;">
                 <div class="accent-grid" id="accent-selector">
-                    <div class="accent-swatch active" style="background: #6366f1;" data-color="#6366f1" data-hover="#4f46e5"><i class="ri-check-line"></i></div>
+                    <div class="accent-swatch " style="background: #6366f1;" data-color="#6366f1" data-hover="#4f46e5"><i class="ri-check-line"></i></div>
+                    <!-- <div class="accent-swatch active" style="background: #6366f1;" data-color="#6366f1" data-hover="#4f46e5"><i class="ri-check-line"></i></div> -->
                     <div class="accent-swatch" style="background: #3b82f6;" data-color="#3b82f6" data-hover="#2563EB"><i class="ri-check-line"></i></div>
                     <div class="accent-swatch" style="background: #10b981;" data-color="#10b981" data-hover="#059669"><i class="ri-check-line"></i></div>
                     <div class="accent-swatch" style="background: #f43f5e;" data-color="#f43f5e" data-hover="#e11d48"><i class="ri-check-line"></i></div>
                     <div class="accent-swatch" style="background: #f59e0b;" data-color="#f59e0b" data-hover="#d97706"><i class="ri-check-line"></i></div>
                     <div class="accent-swatch" style="background: #0ea5e9;" data-color="#0ea5e9" data-hover="#0284c7"><i class="ri-check-line"></i></div>
-                    <div class="accent-swatch" style="background: #8b5cf6;" data-color="#8b5cf6" data-hover="#7c3aed"><i class="ri-check-line"></i></div>
-                </div>
-
-                <div class="settings-section-title" style="margin-top: 35px;">Application</div>
-                <div class="settings-list">
-                    <div class="settings-list-item">
-                        <div class="item-info"><i class="ri-notification-3-line"></i> Push Notifications</div>
-                        <div class="item-action toggle-switch active" onclick="this.classList.toggle('active')"></div>
-                    </div>
-                    <div class="settings-list-item">
-                        <div class="item-info"><i class="ri-volume-up-line"></i> Interface Sounds</div>
-                        <div class="item-action toggle-switch" onclick="this.classList.toggle('active')"></div>
-                    </div>
-                    <div class="settings-list-item" onclick="window.location.href='settings-account.html'">
-                        <div class="item-info"><i class="ri-shield-user-line"></i> Edit Profile & Account</div>
-                        <div class="item-action"><i class="ri-arrow-right-s-line"></i></div>
+                    
+                    <div class="custom-color-picker-wrap">
+                        <input type="color" id="custom-accent-color" value="#fff">
+                        <span>Custom</span>
                     </div>
                 </div>
-
             </div>
+
+            <!-- <div class="settings-section-title">Notifications</div>
+            <div class="settings-group list-group">
+                <div class="list-item">
+                    <div class="item-left"><i class="ri-notification-badge-line icon-bg-blue"></i> Push Notifications</div>
+                    <div class="toggle-switch active" onclick="this.classList.toggle('active')"></div>
+                </div>
+                <div class="list-item">
+                    <div class="item-left"><i class="ri-mail-send-line icon-bg-purple"></i> Email Digests</div>
+                    <div class="toggle-switch active" onclick="this.classList.toggle('active')"></div>
+                </div>
+                <div class="list-item">
+                    <div class="item-left"><i class="ri-volume-up-line icon-bg-green"></i> Interface Sounds</div>
+                    <div class="toggle-switch" onclick="this.classList.toggle('active')"></div>
+                </div>
+            </div> -->
+<div class="settings-section-title">Home Screen & App</div>
+            <div class="settings-group list-group">
+                <div class="list-item">
+                    <div class="item-left"><i class="ri-hand-coin-line icon-bg-orange"></i> Enable Greetings</div>
+                    <div class="toggle-switch active" id="toggle-greeting"></div>
+                </div>
+                <div class="list-item">
+                    <div class="item-left"><i class="ri-user-smile-line icon-bg-blue"></i> Show Name in Greeting</div>
+                    <div class="toggle-switch active" id="toggle-greeting-name"></div>
+                </div>
+                
+                <div class="list-item">
+                    <div class="item-left"><i class="ri-chat-quote-line icon-bg-green"></i> Greeting Style</div>
+                    <select id="greeting-style-select" class="modern-select">
+                        <option value="smart">Hybrid (Smart Mix)</option>
+                        <option value="time">Time-Based (Morning/Evening)</option>
+                        <option value="casual">Casual (Hey/Welcome)</option>
+                    </select>
+                </div>
+                
+            </div>
+            <div class="settings-section-title">Privacy & Data</div>
+            <div class="settings-group list-group">
+                <div class="list-item">
+                    <div class="item-left"><i class="ri-eye-off-line icon-bg-gray"></i> Private Profile Mode</div>
+                    <div class="toggle-switch" onclick="this.classList.toggle('active')"></div>
+                </div>
+                <div class="list-item">
+                    <div class="item-left"><i class="ri-wifi-line icon-bg-orange"></i> Data Saver Mode</div>
+                    <div class="toggle-switch" onclick="this.classList.toggle('active')"></div>
+                </div>
+            </div>
+
+            <div class="settings-section-title">Account</div>
+            <div class="settings-group list-group">
+                <div class="list-item clickable" onclick="window.location.href='settings-account.html'">
+                    <div class="item-left"><i class="ri-shield-user-line icon-bg-primary"></i> Edit Profile & Account</div>
+                    <i class="ri-arrow-right-s-line text-muted"></i>
+                </div>
+                <div class="list-item clickable" id="settings-logout-btn">
+                    <div class="item-left text-danger"><i class="ri-logout-box-r-line" style="color: #dc2626;"></i> Log Out</div>
+                </div>
+            </div>
+
         </div>
     </main>
 

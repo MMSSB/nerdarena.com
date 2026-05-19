@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Nerd Arena | Settings Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <script src="theme.js"></script> 
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* ========================================= */
+/* --- DESKTOP DASHBOARD SETTINGS UI     --- */
+/* ========================================= */
+
+.dashboard-wrapper {
+    max-width: 100%; 
+    padding: 0; 
+    gap: 0; 
+    background: var(--card-bg);
+}
+.db-main-feed {
+    padding: 0; 
+    background: var(--card-bg);
+}
+
+.db-container {
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100vh - 70px);
+}
+
+/* Header & Tabs */
+.db-header { margin-bottom: 20px; }
+.db-title-row {
+    display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;
+}
+.db-title-row h2 {
+    font-size: 1.8rem; font-weight: 700; color: var(--text-main);
+}
+.db-tabs {
+    display: flex; gap: 20px; border-bottom: 1px solid var(--border-color);
+    overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; scrollbar-width: none;
+}
+.db-tabs::-webkit-scrollbar { display: none; }
+.db-tab {
+    padding: 10px 5px 12px 5px; font-weight: 600; font-size: 0.95rem; color: var(--text-muted);
+    border-bottom: 2px solid transparent; transition: 0.2s; margin-bottom: -1px;
+}
+.db-tab:hover { color: var(--text-main); }
+.db-tab.active { color: var(--text-main); border-bottom-color: var(--primary-color); }
+
+/* Sections */
+.db-content { display: none; animation: fadeInUp 0.3s ease; }
+.db-content.active { display: block; }
+.db-section-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 24px 0; border-bottom: 1px solid var(--border-color);
+}
+.db-section-header h3 { font-size: 1.1rem; color: var(--text-main); margin-bottom: 4px; }
+.db-section-header p { font-size: 0.9rem; color: var(--text-muted); }
+
+/* Grid Rows */
+.db-row {
+    display: grid; grid-template-columns: 300px 1fr; gap: 30px; padding: 24px 0;
+    border-bottom: 1px solid var(--border-color); align-items: start;
+}
+.db-row-info strong {
+    display: block; font-size: 0.95rem; font-weight: 600; color: var(--text-main); margin-bottom: 6px;
+}
+.db-row-info p { font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; }
+.db-row-control.align-right { display: flex; justify-content: flex-end; align-items: center; height: 100%; }
+
+/* Color Picker Exact Match */
+.db-color-picker-group { display: flex; align-items: center; gap: 20px; }
+.db-hex-input {
+    display: flex; align-items: center; gap: 12px; border: 1px solid var(--border-color);
+    border-radius: 8px; padding: 6px 16px 6px 6px; background: var(--card-bg);
+}
+.db-hex-input input[type="color"] {
+    -webkit-appearance: none; border: none; width: 28px; height: 28px;
+    border-radius: 6px; cursor: pointer; padding: 0; background: none;
+}
+.db-hex-input input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+.db-hex-input input[type="color"]::-webkit-color-swatch { border: none; border-radius: 6px; }
+.db-hex-input span { font-family: monospace; font-size: 0.9rem; font-weight: 600; color: var(--text-main); }
+.accent-swatch-list { display: flex; gap: 10px; }
+
+/* Visual Selection Cards */
+.db-visual-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 20px; }
+.db-visual-card { cursor: pointer; position: relative; transition: var(--transition); }
+.db-preview {
+    height: 130px; border: 1px solid var(--border-color); border-radius: 12px; background: var(--bg-color);
+    margin-bottom: 12px; overflow: hidden; position: relative; transition: var(--transition);
+}
+.db-preview.flex-center { display: flex; justify-content: center; align-items: center; }
+.db-card-label strong { display: block; font-size: 0.9rem; color: var(--text-main); margin-bottom: 2px;}
+.db-card-label span { display: block; font-size: 0.8rem; color: var(--text-muted); }
+
+/* Check Badge */
+.db-check {
+    position: absolute; top: -10px; right: -10px; width: 24px; height: 24px;
+    background: var(--primary-color); color: white; border-radius: 50%;
+    display: flex; justify-content: center; align-items: center; font-size: 0.9rem;
+    opacity: 0; transform: scale(0.5); transition: 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border: 2px solid var(--card-bg); z-index: 10;
+}
+.db-visual-card.active .db-preview { border-color: var(--primary-color); box-shadow: 0 0 0 1px var(--primary-color); }
+.db-visual-card.active .db-check { opacity: 1; transform: scale(1); }
+
+/* Mock Previews */
+.db-mock-header { width: 100%; height: 30px; }
+.db-mock-body { width: 80%; height: 60px; margin: 15px auto; border-radius: 6px; }
+
+/* Modern Chunky Toggle */
+.modern-toggle {
+    position: relative; width: 44px; height: 24px; background: var(--border-color); border-radius: 30px; cursor: pointer; transition: 0.3s ease;
+}
+.modern-toggle::after {
+    content: ''; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; background: white; border-radius: 50%; transition: transform 0.3s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+.modern-toggle.active { background: var(--primary-color); }
+.modern-toggle.active::after { transform: translateX(20px); }
+
+/* Footer */
+.db-footer {
+    display: flex; justify-content: flex-end; gap: 15px; padding: 24px 0; margin-top: auto; border-top: 1px solid var(--border-color);
+}
+.btn-secondary {
+    padding: 10px 18px; background: transparent; border: 1px solid var(--border-color); border-radius: 8px; font-weight: 600; color: var(--text-main); box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+}
+.btn-secondary:hover { background: var(--bg-color); }
+.btn-primary {
+    padding: 10px 18px; background: var(--primary-color); border: none; border-radius: 8px; font-weight: 600; color: white; box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+.btn-primary:hover { background: var(--primary-hover); }
+.btn-danger-outline {
+    padding: 8px 16px; background: transparent; border: 1px solid #fca5a5; border-radius: 8px; font-weight: 600; color: #dc2626; display: inline-flex; align-items: center; gap: 8px;
+}
+.btn-danger-outline:hover { background: #fef2f2; border-color: #ef4444; }
+
+
+/* ========================================= */
+/* --- PERFECT MOBILE RESPONSIVENESS     --- */
+/* ========================================= */
+@media (max-width: 768px) {
+    /* 1. Global Override for Dashboard Page */
+    .dashboard-wrapper { grid-template-columns: 100% !important; padding-bottom: 0 !important; }
+    .db-container { padding: 15px 15px 120px 15px; } /* Extra padding for floating mobile menu */
+    
+    /* 2. Text Adjustments */
+    .db-title-row h2 { font-size: 1.5rem; margin-bottom: 0; }
+    .db-section-header { padding: 16px 0; }
+    .db-section-header h3 { font-size: 1.05rem; }
+    
+    /* 3. Flush Tabs Scrollable */
+    .db-tabs { gap: 15px; padding-bottom: 2px; }
+    .db-tab { font-size: 0.9rem; padding: 10px 2px; }
+
+    /* 4. Single Column Form Rows */
+    .db-row { grid-template-columns: 1fr; gap: 12px; padding: 20px 0; }
+    .db-row-control.align-right { justify-content: flex-start; margin-top: 5px; }
+
+    /* 5. Mobile Wrapping for Inputs */
+    .db-color-picker-group { flex-direction: row; flex-wrap: wrap; gap: 12px; }
+    .db-visual-grid { grid-template-columns: 1fr; gap: 15px; } /* Stack visually vertically */
+    .db-preview { height: 100px; }
+
+    /* 6. Mobile Footer */
+    .db-footer { flex-direction: column-reverse; gap: 12px; padding-top: 20px; border-top: none; }
+    .db-footer button { width: 100%; padding: 14px; font-size: 1rem; border-radius: 12px; }
+    .btn-danger-outline { width: 100%; justify-content: center; padding: 14px; }
+}
+
+
+
+
+
+
+
+
+
+        @media (max-width: 768px) {
+    .sidebar-nav {
+        display: none;
+    }
+}
+    </style>
+</head>
+<body>
+
+    <header class="top-header">
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <button onclick="window.history.back()" class="icon-btn" style="padding: 5px;"><i class="ri-arrow-left-s-line" style="font-size: 1.8rem;"></i></button>
+            <h2 style="font-size: 1.2rem; margin: 0;">Settings</h2>
+        </div>
+
+        <div class="header-actions" style="margin-left: auto;">
+            <!-- <button class="icon-btn show-mobile-only" onclick="window.history.back()"><i class="ri-arrow-left-line"></i></button> -->
+            <div class="user-profile dropdown-container" id="nav-user-container">
+                <div class="avatar-text bg-primary" id="nav-avatar">...</div>
+            </div>
+        </div>
+    </header>
+
+    <main class="app-layout dashboard-wrapper">
+        
+        <aside class="sidebar-nav hide-mobile" style="width: 260px; border-right: 1px solid var(--border-color); padding: 24px; background: var(--card-bg); overflow: scroll;">
+            <ul class="nav-menu">
+                <li onclick="window.location.href='index.html'"><i class="ri-home-5-fill icon"></i> Overview</li>
+                <li onclick="window.location.href='profile.html'"><i class="ri-user-smile-line icon"></i> Profile</li>
+            </ul>
+            <div style="flex-grow: 1;"></div> 
+            <ul class="nav-menu" style="margin-top: 20px;">
+                <li><i class="ri-question-line icon"></i> Support</li>
+                <li class="active" onclick="window.location.href='settings.html'"><i class="ri-settings-4-fill icon"></i> Settings</li>
+            </ul>
+        </aside>
+
+        <section class="main-feed db-main-feed">
+            <div class="db-container animate-fade-in">
+                
+                <div class="db-header">
+                    <div class="db-title-row">
+                        <h2>Settings</h2>
+                        <button class="icon-btn hide-mobile"><i class="ri-more-2-fill"></i></button>
+                    </div>
+                    
+                    <div class="db-tabs">
+                        <button class="db-tab active" data-target="tab-appearance">Appearance</button>
+                        <button class="db-tab" data-target="tab-greetings">Smart Greetings</button>
+                        <button class="db-tab" data-target="tab-notifications">Notifications</button>
+                    </div>
+                </div>
+
+                <div class="db-content active" id="tab-appearance">
+                    <div class="db-section-header">
+                        <div>
+                            <h3>Appearance</h3>
+                            <p>Change how your Arena environment looks and feels.</p>
+                        </div>
+                    </div>
+
+                    <div class="db-row">
+                        <div class="db-row-info">
+                            <strong>Brand color</strong>
+                            <p>Select or customize your brand color.</p>
+                        </div>
+                        <div class="db-row-control">
+                            <div class="db-color-picker-group">
+                                <div class="db-hex-input">
+                                    <input type="color" id="custom-accent-color" value="#6366f1">
+                                    <span id="hex-display">#6366F1</span>
+                                </div>
+                                <div class="accent-swatch-list" id="accent-selector">
+                                    <div class="accent-swatch active" style="background: #6366f1;" data-color="#6366f1" data-hover="#4f46e5"><i class="ri-check-line"></i></div>
+                                    <div class="accent-swatch" style="background: #3b82f6;" data-color="#3b82f6" data-hover="#2563EB"><i class="ri-check-line"></i></div>
+                                    <div class="accent-swatch" style="background: #10b981;" data-color="#10b981" data-hover="#059669"><i class="ri-check-line"></i></div>
+                                    <div class="accent-swatch" style="background: #f43f5e;" data-color="#f43f5e" data-hover="#e11d48"><i class="ri-check-line"></i></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="db-row">
+                        <div class="db-row-info">
+                            <strong>Interface Theme</strong>
+                            <p>How the application is displayed.</p>
+                        </div>
+                        <div class="db-row-control">
+                            <div class="db-visual-grid" id="theme-selector">
+                                <div class="db-visual-card active" data-theme-val="light">
+                                    <div class="db-preview" style="background: #f8fafc;">
+                                        <div class="db-mock-header" style="background: white; border-bottom: 1px solid #e2e8f0;"></div>
+                                        <div class="db-mock-body"></div>
+                                    </div>
+                                    <div class="db-card-label">
+                                        <strong>Light Mode</strong>
+                                        <span>Clean and bright.</span>
+                                    </div>
+                                    <div class="db-check"><i class="ri-check-line"></i></div>
+                                </div>
+
+                                <div class="db-visual-card" data-theme-val="dark">
+                                    <div class="db-preview" style="background: #0f172a;">
+                                        <div class="db-mock-header" style="background: #1e293b; border-bottom: 1px solid #334155;"></div>
+                                        <div class="db-mock-body" style="background: #334155;"></div>
+                                    </div>
+                                    <div class="db-card-label">
+                                        <strong>Dark Mode</strong>
+                                        <span>Easy on the eyes.</span>
+                                    </div>
+                                    <div class="db-check"><i class="ri-check-line"></i></div>
+                                </div>
+
+                                <div class="db-visual-card" data-theme-val="system">
+                                    <div class="db-preview" style="background: linear-gradient(135deg, #f8fafc 50%, #0f172a 50%);">
+                                        <i class="ri-computer-line" style="font-size: 2rem; color: #94a3b8; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);"></i>
+                                    </div>
+                                    <div class="db-card-label">
+                                        <strong>System</strong>
+                                        <span>Follows OS settings.</span>
+                                    </div>
+                                    <div class="db-check"><i class="ri-check-line"></i></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="db-content" id="tab-greetings">
+                    <div class="db-section-header">
+                        <div>
+                            <h3>Smart Greetings</h3>
+                            <p>Configure the welcome message displayed on your feed.</p>
+                        </div>
+                    </div>
+
+                    <div class="db-row">
+                        <div class="db-row-info">
+                            <strong>Enable Greetings</strong>
+                            <p>Show a welcome message at the top of the feed.</p>
+                        </div>
+                        <div class="db-row-control align-right">
+                            <div class="modern-toggle active" id="toggle-greeting"></div>
+                        </div>
+                    </div>
+
+                    <div class="db-row">
+                        <div class="db-row-info">
+                            <strong>Include First Name</strong>
+                            <p>Personalize the greeting with your name.</p>
+                        </div>
+                        <div class="db-row-control align-right">
+                            <div class="modern-toggle active" id="toggle-greeting-name"></div>
+                        </div>
+                    </div>
+
+                    <div class="db-row">
+                        <div class="db-row-info">
+                            <strong>Greeting Style</strong>
+                            <p>Choose the tone of your welcome message.</p>
+                        </div>
+                        <div class="db-row-control">
+                            <div class="db-visual-grid" id="greeting-style-pills">
+                                <div class="db-visual-card active" data-val="smart">
+                                    <div class="db-preview flex-center"><i class="ri-robot-2-line" style="font-size: 2rem; color: var(--primary-color);"></i></div>
+                                    <div class="db-card-label"><strong>Smart Mix</strong><span>AI varied.</span></div>
+                                    <div class="db-check"><i class="ri-check-line"></i></div>
+                                </div>
+                                <div class="db-visual-card" data-val="time">
+                                    <div class="db-preview flex-center"><i class="ri-sun-line" style="font-size: 2rem; color: #f59e0b;"></i></div>
+                                    <div class="db-card-label"><strong>Time Based</strong><span>Morning/Night.</span></div>
+                                    <div class="db-check"><i class="ri-check-line"></i></div>
+                                </div>
+                                <div class="db-visual-card" data-val="casual">
+                                    <div class="db-preview flex-center"><i class="ri-chat-smile-3-line" style="font-size: 2rem; color: #10b981;"></i></div>
+                                    <div class="db-card-label"><strong>Casual</strong><span>Hey/Welcome.</span></div>
+                                    <div class="db-check"><i class="ri-check-line"></i></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="db-content" id="tab-notifications">
+                    <div class="db-section-header">
+                        <div>
+                            <h3>Notifications & Privacy</h3>
+                            <p>Manage alerts and account visibility.</p>
+                        </div>
+                    </div>
+
+                    <div class="db-row">
+                        <div class="db-row-info">
+                            <strong>Push Notifications</strong>
+                            <p>Get alerted for new messages and interactions.</p>
+                        </div>
+                        <div class="db-row-control align-right">
+                            <div class="modern-toggle active" onclick="this.classList.toggle('active')"></div>
+                        </div>
+                    </div>
+
+                    <div class="db-row">
+                        <div class="db-row-info">
+                            <strong>Private Profile</strong>
+                            <p>Hide your architecture vault from the public.</p>
+                        </div>
+                        <div class="db-row-control align-right">
+                            <div class="modern-toggle" onclick="this.classList.toggle('active')"></div>
+                        </div>
+                    </div>
+
+                    <div class="db-row" style="border-bottom: none;">
+                        <div class="db-row-info">
+                            <strong class="text-danger">Account Access</strong>
+                            <p>Sign out of Nerd Arena on this device.</p>
+                        </div>
+                        <div class="db-row-control align-right">
+                            <button class="btn-danger-outline" id="settings-logout-btn">
+                                <i class="ri-logout-box-r-line"></i> Log Out
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="db-footer">
+                    <button class="btn-secondary" onclick="window.history.back()">Cancel</button>
+                    <button class="btn-primary" onclick="alert('Settings saved automatically!')">Save changes</button>
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+    <script type="module" src="pload.js"></script>
+    <script type="module" >
+        // settings.js
+import { auth, db } from './firebase.js';
+import { doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+import { signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+
+document.addEventListener('DOMContentLoaded', () => {
+    initTabs();
+    initThemeSettings();
+    initAccentSettings();
+    
+    document.addEventListener('userDataLoaded', initGreetingSettings);
+    
+    document.getElementById('settings-logout-btn')?.addEventListener('click', async () => {
+        localStorage.removeItem('na_theme');
+        localStorage.removeItem('na_accent');
+        localStorage.removeItem('na_accent_hover');
+        await signOut(auth);
+        window.location.replace("login.html");
+    });
+});
+
+function initTabs() {
+    const tabs = document.querySelectorAll('.db-tab');
+    const sections = document.querySelectorAll('.db-content');
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            tabs.forEach(t => t.classList.remove('active'));
+            sections.forEach(s => s.classList.remove('active'));
+            
+            tab.classList.add('active');
+            document.getElementById(tab.getAttribute('data-target')).classList.add('active');
+        });
+    });
+}
+
+function initThemeSettings() {
+    const themeCards = document.querySelectorAll('#theme-selector .db-visual-card');
+    const savedTheme = localStorage.getItem('na_theme') || 'system';
+
+    themeCards.forEach(card => {
+        if (card.getAttribute('data-theme-val') === savedTheme) card.classList.add('active');
+        else card.classList.remove('active');
+
+        card.addEventListener('click', () => {
+            themeCards.forEach(c => c.classList.remove('active'));
+            card.classList.add('active');
+
+            const selectedTheme = card.getAttribute('data-theme-val');
+            localStorage.setItem('na_theme', selectedTheme);
+            if (window.applyThemeToDOM) window.applyThemeToDOM();
+        });
+    });
+}
+
+function initAccentSettings() {
+    const accentSwatches = document.querySelectorAll('.accent-swatch');
+    const customPicker = document.getElementById('custom-accent-color');
+    const hexDisplay = document.getElementById('hex-display');
+    const savedAccent = localStorage.getItem('na_accent') || '#6366f1'; 
+
+    if (hexDisplay) hexDisplay.innerText = savedAccent.toUpperCase();
+
+    // Standard preset click handler
+    accentSwatches.forEach(swatch => {
+        if (swatch.getAttribute('data-color') === savedAccent) swatch.classList.add('active');
+
+        swatch.addEventListener('click', async () => {
+            accentSwatches.forEach(s => s.classList.remove('active'));
+            swatch.classList.add('active');
+            
+            if (hexDisplay) hexDisplay.innerText = swatch.getAttribute('data-color').toUpperCase();
+            if (customPicker) customPicker.value = swatch.getAttribute('data-color');
+            
+            saveColor(swatch.getAttribute('data-color'), swatch.getAttribute('data-hover'));
+        });
+    });
+
+    // Custom Color Picker logic
+    if (customPicker) {
+        customPicker.value = savedAccent; 
+        
+        customPicker.addEventListener('input', (e) => {
+            accentSwatches.forEach(s => s.classList.remove('active')); 
+            const hex = e.target.value;
+            if (hexDisplay) hexDisplay.innerText = hex.toUpperCase();
+            const hoverHex = shadeColor(hex, -15);
+            saveColor(hex, hoverHex);
+        });
+    }
+
+    async function saveColor(color, hover) {
+        localStorage.setItem('na_accent', color);
+        localStorage.setItem('na_accent_hover', hover);
+        if (window.applyThemeToDOM) window.applyThemeToDOM();
+
+        if (auth.currentUser) {
+            try { await updateDoc(doc(db, "users", auth.currentUser.uid), { accentColor: color, accentHover: hover }); } 
+            catch(e) { console.error(e); }
+        }
+    }
+}
+
+function initGreetingSettings() {
+    const greetingToggle = document.getElementById('toggle-greeting');
+    const nameToggle = document.getElementById('toggle-greeting-name');
+    const styleCards = document.querySelectorAll('#greeting-style-pills .db-visual-card'); 
+    
+    if (!greetingToggle || !nameToggle || !window.currentUserData) return;
+
+    // Load initial data
+    if (window.currentUserData.greetingEnabled === false) greetingToggle.classList.remove('active');
+    if (window.currentUserData.greetingShowName === false) nameToggle.classList.remove('active');
+    
+    const savedStyle = window.currentUserData.greetingStyle || 'smart';
+    styleCards.forEach(card => {
+        if (card.getAttribute('data-val') === savedStyle) card.classList.add('active');
+        else card.classList.remove('active');
+    });
+
+    // Toggles
+    greetingToggle.addEventListener('click', async () => {
+        greetingToggle.classList.toggle('active');
+        if (auth.currentUser) {
+            try { await updateDoc(doc(db, "users", auth.currentUser.uid), { greetingEnabled: greetingToggle.classList.contains('active') }); }
+            catch(e) { console.error(e); }
+        }
+    });
+
+    nameToggle.addEventListener('click', async () => {
+        nameToggle.classList.toggle('active');
+        if (auth.currentUser) {
+            try { await updateDoc(doc(db, "users", auth.currentUser.uid), { greetingShowName: nameToggle.classList.contains('active') }); }
+            catch(e) { console.error(e); }
+        }
+    });
+    
+    // Greeting Style Select
+    styleCards.forEach(card => {
+        card.addEventListener('click', async () => {
+            styleCards.forEach(c => c.classList.remove('active'));
+            card.classList.add('active');
+            
+            const selectedStyle = card.getAttribute('data-val');
+            if (auth.currentUser) {
+                try { await updateDoc(doc(db, "users", auth.currentUser.uid), { greetingStyle: selectedStyle }); }
+                catch(e) { console.error(e); }
+            }
+        });
+    });
+}
+
+function shadeColor(color, percent) {
+    let R = parseInt(color.substring(1,3),16); let G = parseInt(color.substring(3,5),16); let B = parseInt(color.substring(5,7),16);
+    R = parseInt(R * (100 + percent) / 100); G = parseInt(G * (100 + percent) / 100); B = parseInt(B * (100 + percent) / 100);
+    R = (R<255)?R:255; R = (R<0)?0:R; G = (G<255)?G:255; G = (G<0)?0:G; B = (B<255)?B:255; B = (B<0)?0:B;
+    let RR = ((R.toString(16).length==1)?"0"+R.toString(16):R.toString(16));
+    let GG = ((G.toString(16).length==1)?"0"+G.toString(16):G.toString(16));
+    let BB = ((B.toString(16).length==1)?"0"+B.toString(16):B.toString(16));
+    return "#"+RR+GG+BB;
+}
+    </script>
+</body>
+</html>

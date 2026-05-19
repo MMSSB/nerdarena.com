@@ -108,7 +108,45 @@ function renderGrid(containerId, imageArray, currentValue, callback, type, isSav
         container.appendChild(div);
     });
 }
+// 3. Manage Greetings (SAVES TO FIREBASE)
+function initGreetingSettings() {
+    const greetingToggle = document.getElementById('toggle-greeting');
+    const nameToggle = document.getElementById('toggle-greeting-name');
+    const styleSelect = document.getElementById('greeting-style-select'); // NEW
+    
+    if (!greetingToggle || !nameToggle || !styleSelect || !window.currentUserData) return;
 
+    // Load initial visual states from Firebase data
+    if (window.currentUserData.greetingEnabled === false) greetingToggle.classList.remove('active');
+    if (window.currentUserData.greetingShowName === false) nameToggle.classList.remove('active');
+    if (window.currentUserData.greetingStyle) styleSelect.value = window.currentUserData.greetingStyle;
+
+    // Handle Enable/Disable click
+    greetingToggle.addEventListener('click', async () => {
+        greetingToggle.classList.toggle('active');
+        if (auth.currentUser) {
+            try { await updateDoc(doc(db, "users", auth.currentUser.uid), { greetingEnabled: greetingToggle.classList.contains('active') }); }
+            catch(e) { console.error(e); }
+        }
+    });
+
+    // Handle Name Show/Hide click
+    nameToggle.addEventListener('click', async () => {
+        nameToggle.classList.toggle('active');
+        if (auth.currentUser) {
+            try { await updateDoc(doc(db, "users", auth.currentUser.uid), { greetingShowName: nameToggle.classList.contains('active') }); }
+            catch(e) { console.error(e); }
+        }
+    });
+    
+    // Handle Dropdown Change for Greeting Style
+    styleSelect.addEventListener('change', async (e) => {
+        if (auth.currentUser) {
+            try { await updateDoc(doc(db, "users", auth.currentUser.uid), { greetingStyle: e.target.value }); }
+            catch(e) { console.error(e); }
+        }
+    });
+}
 function setupTextAvatarCreator() {
     updateTextPreview();
 
