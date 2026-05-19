@@ -239,7 +239,7 @@ function attachListeners() {
         btn.addEventListener('click', async (e) => {
             e.stopPropagation();
             const id = e.currentTarget.getAttribute('data-id');
-            const shareUrl = `${window.location.origin}/post.html?id=${id}`;
+            const shareUrl = `${window.location.origin}/nerdarena.com/post.html?id=${id}`;
             try {
                 if (navigator.share) await navigator.share({ title: 'Nerd Arena Pitch', url: shareUrl });
                 else { await navigator.clipboard.writeText(shareUrl); alert("Link copied to clipboard!"); }
