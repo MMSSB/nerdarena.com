@@ -2797,3 +2797,169 @@ div {
     border-radius: 12px; margin-bottom: 12px;
     border: 1px solid var(--border-color);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ========================================= */
+/* --- MOBILE FLOATING DOCK (APP STYLE) ---  */
+/* ========================================= */
+
+/* Hidden on Desktop by default */
+.floating-dock-container {
+    display: none; 
+}
+
+/* Entry Animation */
+@keyframes dockSpringUp {
+    0% { transform: translate(-50%, 150px) scale(0.9); opacity: 0; }
+    100% { transform: translate(-50%, 0) scale(1); opacity: 1; }
+}
+
+@media (max-width: 768px) {
+    /* Main Container */
+    .floating-dock-container {
+        display: flex;
+        position: fixed;
+        bottom: max(20px, env(safe-area-inset-bottom));
+        left: 50%;
+        /* Starting position for animation */
+        transform: translate(-50%, 150px); 
+        align-items: center;
+        gap: 12px;
+        z-index: 9999;
+        width: 92%;
+        max-width: 420px;
+        justify-content: center;
+        animation: dockSpringUp 0.8s var(--spring-bounce) forwards;
+    }
+
+    /* The Frosted Glass Pill */
+    .glass-pill {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex: 1;
+        padding: 12px 20px;
+        border-radius: 50px;
+        
+        /* Modern Glassmorphism */
+        background: #ffffff7e;
+        /* background: rgba(255, 255, 255, 0.75); */
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
+        
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        box-shadow: 
+            0 12px 35px rgba(0, 0, 0, 0.08), 
+            inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    }
+
+    /* Dark Mode Glass */
+    [data-theme="dark"] .glass-pill {
+        background: #27272769;
+        /* background: rgba(30, 41, 59, 0.65); */
+        border-color: rgba(255, 255, 255, 0.08);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+    }
+
+    /* Navigation Icons */
+    .nav-icon {
+        position: relative;
+        color: var(--text-muted);
+        font-size: 1.6rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 8px;
+        border-radius: 50%;
+        transition: var(--transition);
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .nav-icon:hover, .nav-icon:active {
+        color: var(--primary-color);
+        background: rgba(99, 102, 241, 0.12);
+        transform: scale(1.08) translateY(-2px);
+    }
+
+    .nav-icon.active {
+        color: var(--primary-color);
+    }
+
+    /* Notification Badge */
+    .badge-dot {
+        position: absolute;
+        top: 6px;
+        right: 4px;
+        width: 10px;
+        height: 10px;
+        background-color: #ef4444;
+        border-radius: 50%;
+        border: 2px solid #ffffff;
+        z-index: 2;
+    }
+    
+    [data-theme="dark"] .badge-dot {
+        border-color: rgba(30, 41, 59, 1);
+    }
+
+    /* The Floating Action Sphere (+) */
+    .action-sphere {
+        width: 60px;
+        height: 60px;
+        min-width: 60px;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 1.8rem;
+        color: white !important;
+        cursor: pointer;
+        
+        /* Nerd Arena Gradient */
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+        
+        /* Cutout effect matching body bg */
+        border: 4px solid var(--bg-color); 
+        /* box-shadow: 0 8px 25px rgba(97, 97, 97, 0.4); */
+            
+        transition: transform 0.3s var(--spring-bounce), box-shadow 0.3s;
+    }
+
+    .action-sphere:hover, .action-sphere:active {
+        transform: scale(0.9) translateY(2px);
+        /* box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3); */
+        background: linear-gradient(135deg, var(--primary-hover), #4338ca);
+    }
+}
+
+/* Adjust layout on tiny screens */
+@media (max-width: 380px) {
+    .floating-dock-container {
+        gap: 8px;
+        width: 95%;
+    }
+    .glass-pill {
+        padding: 10px 16px;
+    }
+    .action-sphere {
+        width: 54px;
+        height: 54px;
+        min-width: 54px;
+        border-width: 3px;
+    }
+}

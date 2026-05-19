@@ -122,14 +122,37 @@
         </aside>
     </main>
 
-    <nav class="bottom-nav animate-fade-in">
+    <!-- <nav class="bottom-nav animate-fade-in">
         <a href="index.html" class="active"><i class="ph-fill ph-terminal-window"></i></a>
         <a href="search.html"><i class="ph ph-magnifying-glass"></i></a>
         <a href="#" class="nav-center-btn" onclick="document.querySelector('.create-post textarea').focus();"><i class="ph ph-plus"></i></a>
         <a href="#"><i class="ri-notification-3-line"></i></a>
         <a href="profile.html"><i class="ph ph-user"></i></a>
+    </nav> -->
+<div class="floating-dock-container">
+    <nav class="glass-pill">
+        <a href="index.html" class="nav-icon active">
+            <i class="ph-fill ph-terminal-window"></i>
+        </a>
+        
+        <a href="search.html" class="nav-icon">
+            <i class="ph ph-magnifying-glass"></i>
+        </a>
+        
+        <a href="#" class="nav-icon">
+            <div class="badge-dot"></div>
+            <i class="ph ph-bell"></i>
+        </a>
+        
+        <a href="profile.html" class="nav-icon">
+            <i class="ph ph-user"></i>
+        </a>
     </nav>
 
+    <button class="action-sphere" onclick="document.querySelector('.create-post textarea').focus();">
+        <i class="ph ph-plus"></i>
+    </button>
+</div>
     <script type="module" src="gdrive.js"></script>
     <script type="module" src="pload.js"></script>
     <script type="module" src="app.js"></script>

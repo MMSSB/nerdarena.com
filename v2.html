@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Nerd Arena | Enhanced Menu & Fixed Handle</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* ========================================= */
+        /* 1. PASTE YOUR ENTIRE style.css HERE       */
+        /* ========================================= */
+
+        /* ========================================= */
+        /* 2. ENHANCED BOTTOM SHEET & MENU UI        */
+        /* ========================================= */
+        
+        .sidebar-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
+            background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            z-index: 1999; opacity: 0; transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .sidebar-overlay.active { display: block; opacity: 1; }
+
+        @media (max-width: 768px) {
+            body { background-color: #f8fafc; } 
+            
+            .app-layout { 
+                grid-template-columns: 100%; 
+                padding: 10px 15px; 
+                padding-top: 75px;
+                padding-bottom: 120px;
+            }
+
+            .top-header {
+                position: fixed; top: 0; left: 0; width: 100%;
+                background: rgba(255, 255, 255, 0.85);
+                backdrop-filter: blur(16px);
+                border-bottom: 1px solid rgba(229, 231, 235, 0.5);
+                box-shadow: 0 4px 30px rgba(0, 0, 0, 0.03);
+            }
+
+            /* --- Structural changes for fixed handle --- */
+            .sidebar-nav {
+                display: flex; flex-direction: column;
+                position: fixed; bottom: 0; left: 0;
+                width: 100%; height: 85vh; /* Fixed height so content can scroll inside */
+                padding: 0; /* Removed padding to handle header/content split */
+                background: #f1f5f9; /* Softer background for the menu canvas */
+                border-radius: 30px 30px 0 0;
+                z-index: 2000; 
+                box-shadow: 0 -15px 40px rgba(0, 0, 0, 0.1);
+                transform: translateY(100%); 
+                transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+                overflow: hidden; /* Prevent whole sheet from scrolling */
+            }
+            .sidebar-nav.open { transform: translateY(0); }
+            
+            /* Fixed Header for Grab Handle */
+            .sheet-header {
+                padding: 20px 0;
+                background: #ffffff;
+                border-radius: 30px 30px 0 0;
+                display: flex; justify-content: center; align-items: center;
+                position: relative;
+                z-index: 10;
+                touch-action: none; /* Crucial: Locks drag to this element */
+                border-bottom: 1px solid rgba(0,0,0,0.05);
+                flex-shrink: 0; /* Prevents header from shrinking */
+            }
+
+            .bottom-sheet-handle {
+                width: 50px; height: 6px; background: #cbd5e1;
+                border-radius: 10px; cursor: grab;
+            }
+
+            /* Scrollable Menu Content */
+            .sheet-content {
+                flex: 1;
+                overflow-y: auto;
+                padding: 20px 20px 100px 20px;
+                -webkit-overflow-scrolling: touch;
+            }
+            .sheet-content::-webkit-scrollbar { display: none; }
+
+            /* --- Enhanced Menu UI --- */
+            .user-menu-profile {
+                display: flex; align-items: center; gap: 15px;
+                background: #ffffff; padding: 15px;
+                border-radius: 20px; margin-bottom: 20px;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+            }
+            .user-menu-profile .avatar {
+                width: 50px; height: 50px; border-radius: 50%;
+                display: flex; justify-content: center; align-items: center;
+                color: white; font-weight: bold; font-size: 1.2rem;
+            }
+            .user-menu-profile .info h4 { margin: 0; font-size: 1.1rem; color: var(--text-main); }
+            .user-menu-profile .info p { margin: 0; font-size: 0.85rem; color: var(--text-muted); }
+
+            .menu-group {
+                background: #ffffff;
+                border-radius: 20px;
+                padding: 10px;
+                margin-bottom: 20px;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+            }
+            .menu-group-title {
+                font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px;
+                color: var(--text-muted); font-weight: 700;
+                margin: 0 0 10px 15px; padding-top: 5px;
+            }
+            
+            .modern-nav { margin: 0; padding: 0; list-style: none; }
+            .modern-nav li {
+                display: flex; align-items: center; gap: 15px;
+                padding: 10px; border-radius: 14px;
+                color: var(--text-main); font-weight: 600; font-size: 1rem;
+                transition: background 0.2s;
+            }
+            .modern-nav li:hover, .modern-nav li.active { background: #f8fafc; }
+            
+            /* Colored Icon Wrappers */
+            .icon-wrap {
+                width: 38px; height: 38px; border-radius: 12px;
+                display: flex; justify-content: center; align-items: center;
+                font-size: 1.2rem; color: white;
+            }
+            .bg-indigo { background: linear-gradient(135deg, #6366f1, #4f46e5); }
+            .bg-emerald { background: linear-gradient(135deg, #10b981, #059669); }
+            .bg-rose { background: linear-gradient(135deg, #f43f5e, #e11d48); }
+            .bg-amber { background: linear-gradient(135deg, #f59e0b, #d97706); }
+            .bg-slate { background: linear-gradient(135deg, #64748b, #475569); }
+
+            /* --- Floating Bottom Nav --- */
+            .bottom-nav {
+                display: flex; justify-content: space-between; align-items: center;
+                position: fixed; bottom: env(safe-area-inset-bottom, 20px);
+                left: 50%; transform: translateX(-50%);
+                width: calc(100% - 40px); max-width: 400px;
+                background: rgba(255, 255, 255, 0.85);
+                backdrop-filter: blur(20px);
+                border: 1px solid rgba(255, 255, 255, 0.6);
+                border-radius: 35px; padding: 8px 15px;
+                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+                z-index: 1000;
+            }
+            .bottom-nav a {
+                color: #94a3b8; font-size: 1.5rem; padding: 10px 15px;
+                border-radius: 20px; transition: all 0.25s; position: relative;
+            }
+            .bottom-nav a:hover, .bottom-nav a.active {
+                color: var(--primary-color);
+                background: rgba(99, 102, 241, 0.1);
+                transform: scale(1.05);
+            }
+            .bottom-nav .nav-center-btn {
+                background: linear-gradient(135deg, #6366f1, #4f46e5);
+                color: white !important; border-radius: 50%;
+                width: 56px; height: 56px; display: flex; justify-content: center; align-items: center;
+                font-size: 1.8rem; transform: translateY(-20px);
+                border: 5px solid #f8fafc; box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4); padding: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="top-header">
+         <a href="index.html"><div class="logo"><i class="ph-fill ph-code"></i> <span>Nerd Arena</span></div></a>
+        <div class="search-container">
+            <input type="text" placeholder="Search ideas...">
+        </div>
+        <div class="header-actions">
+            <button class="icon-btn show-mobile-only" id="mobile-menu-btn"><i class="ri-menu-4-line"></i></button>
+            <div class="user-profile dropdown-container" id="nav-user-container">
+                <div class="avatar-text bg-primary" id="nav-avatar">MMS</div>
+            </div>
+        </div>
+    </header>
+
+    <main class="app-layout">
+        <div class="sidebar-overlay" id="mobile-overlay"></div>
+        
+        <aside class="sidebar-nav" id="mobile-sidebar">
+            
+            <div class="sheet-header" id="sheet-drag-handle">
+                <div class="bottom-sheet-handle"></div>
+            </div>
+
+            <div class="sheet-content">
+                
+                <div class="user-menu-profile">
+                    <div class="avatar bg-primary">MMS</div>
+                    <div class="info">
+                        <h4>Mohamed Saad</h4>
+                        <p>@mms_dev</p>
+                    </div>
+                </div>
+
+                <div class="menu-group">
+                    <ul class="modern-nav">
+                        <li class="active">
+                            <div class="icon-wrap bg-indigo"><i class="ri-home-5-fill"></i></div>
+                            Home
+                        </li>
+                        <li>
+                            <div class="icon-wrap bg-slate"><i class="ri-user-smile-line"></i></div>
+                            Profile
+                        </li>
+                        <li>
+                            <div class="icon-wrap bg-emerald"><i class="ri-compass-3-line"></i></div>
+                            Explore Ideas
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="menu-group">
+                    <div class="menu-group-title">Favorites</div>
+                    <ul class="modern-nav">
+                        <li>
+                            <div class="icon-wrap bg-rose"><i class="ri-message-3-line"></i></div>
+                            Messages
+                        </li>
+                        <li>
+                            <div class="icon-wrap bg-amber"><i class="ri-bookmark-line"></i></div>
+                            Saved Pitches
+                        </li>
+                        <li>
+                            <div class="icon-wrap bg-slate"><i class="ri-terminal-box-line"></i></div>
+                            Developer Feed
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="menu-group">
+                    <ul class="modern-nav">
+                        <li>
+                            <div class="icon-wrap bg-slate"><i class="ri-settings-4-line"></i></div>
+                            Settings
+                        </li>
+                    </ul>
+                </div>
+
+            </div>
+        </aside>
+
+        <section class="main-feed">
+            <div class="card create-post animate-fade-in">
+                <div class="post-input-wrapper">
+                    <div class="avatar-text bg-primary">MMS</div>
+                    <textarea placeholder="Post your idea or architecture..." rows="2"></textarea>
+                </div>
+            </div>
+            
+            <div class="card animate-fade-in" style="height: 300px; display:flex; align-items:center; justify-content:center; color: #94a3b8;">Feed Content</div>
+        </section>
+    </main>
+
+    <nav class="bottom-nav animate-fade-in">
+        <a href="index.html" class="active"><i class="ph-fill ph-house"></i></a>
+        <a href="search.html"><i class="ph ph-magnifying-glass"></i></a>
+        <a href="#" class="nav-center-btn"><i class="ph ph-plus"></i></a>
+        <a href="#"><i class="ph ph-bell"></i></a>
+        <a href="profile.html"><i class="ph ph-user"></i></a>
+    </nav>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const sidebar = document.getElementById('mobile-sidebar');
+            const menuBtn = document.getElementById('mobile-menu-btn');
+            const overlay = document.getElementById('mobile-overlay');
+            const dragHandle = document.getElementById('sheet-drag-handle'); // The new fixed header
+
+            if(!sidebar || !menuBtn || !overlay || !dragHandle) return;
+
+            const toggleMenu = () => {
+                const isOpen = sidebar.classList.contains('open');
+                if (isOpen) {
+                    sidebar.classList.remove('open');
+                    overlay.classList.remove('active');
+                    sidebar.style.transform = ''; 
+                } else {
+                    sidebar.classList.add('open');
+                    overlay.classList.add('active');
+                }
+            };
+
+            menuBtn.addEventListener('click', toggleMenu);
+            overlay.addEventListener('click', toggleMenu);
+
+            let startY, currentY, isDragging = false;
+
+            // ONLY attach drag events to the fixed header, not the scrollable content
+            dragHandle.addEventListener('touchstart', (e) => {
+                startY = e.touches[0].clientY;
+                isDragging = true;
+                sidebar.style.transition = 'none'; // Remove CSS transition for smooth drag
+            }, {passive: true});
+
+            dragHandle.addEventListener('touchmove', (e) => {
+                if (!isDragging) return;
+                currentY = e.touches[0].clientY;
+                const dragDistance = currentY - startY;
+                
+                // Allow dragging downwards only
+                if (dragDistance > 0) {
+                    sidebar.style.transform = `translateY(${dragDistance}px)`;
+                }
+            }, {passive: true});
+
+            dragHandle.addEventListener('touchend', () => {
+                if (!isDragging) return;
+                isDragging = false;
+                
+                sidebar.style.transition = 'transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)';
+                
+                // If dragged down enough, close it
+                if (currentY - startY > 60) {
+                    toggleMenu();
+                } else {
+                    // Otherwise snap back
+                    sidebar.style.transform = '';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
