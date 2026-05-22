@@ -1,33 +1,40 @@
 // gdrive.js
 
 /**
- * Extracts the unique file ID from a Google Drive share link and 
- * generates a clean, direct download/rendering stream URL.
- * @param {string} url - The raw user-pasted Google Drive address.
- * @returns {string|null} - Clean direct URL or null if link is invalid.
+ * Smart URL Processor
+ * Extracts IDs from Google Drive links and optimizes for direct rendering.
  */
-export function convertToDirectDriveLink(url) {
+export function processImageUrl(url) {
     if (!url || typeof url !== 'string') return null;
-    
-    let fileId = null;
-    
-    // Match pattern: /file/d/FILE_ID/
-    if (url.includes('/file/d/')) {
-        fileId = url.split('/file/d/')[1].split('/')[0];
-    } 
-    // Match pattern: id=FILE_ID
-    else if (url.includes('id=')) {
-        fileId = url.split('id=')[1].split('&')[0];
-    }
-    // Match pattern: drive.google.com/open?id=FILE_ID
-    else if (url.includes('open?id=')) {
-        fileId = url.split('open?id=')[1].split('&')[0];
+    let finalUrl = url.trim();
+
+    // 1. Handle Pinterest URLs
+    if (finalUrl.includes('pinterest.com') || finalUrl.includes('pin.it')) {
+        if (finalUrl.includes('i.pinimg.com')) {
+            finalUrl = finalUrl.replace(/\/236x\//, '/originals/')
+                             .replace(/\/564x\//, '/originals/')
+                             .replace(/\/736x\//, '/originals/');
+        }
     }
 
-    if (fileId) {
-        // Return direct link format optimized for browsers background rendering
-        return `https://docs.google.com/uc?export=view&id=${fileId}`;
+    // 2. Handle Google Drive URLs
+    if (finalUrl.includes('drive.google.com')) {
+        let fileId = null;
+        
+        const idMatch = finalUrl.match(/\/d\/([a-zA-Z0-9_-]+)/);
+        const queryMatch = finalUrl.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+        
+        if (idMatch && idMatch[1]) {
+            fileId = idMatch[1];
+        } else if (queryMatch && queryMatch[1]) {
+            fileId = queryMatch[1];
+        }
+
+        if (fileId) {
+            // 🔥 THE FIX: Using Google's lh3 user content endpoint bypasses the CSS background blocks
+            finalUrl = `https://lh3.googleusercontent.com/d/${fileId}`;
+        }
     }
-    
-    return null; // Return null if it's not a valid Drive link format
+
+    return finalUrl;
 }

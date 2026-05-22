@@ -301,7 +301,7 @@ div {
 }
 
 .main-feed::-webkit-scrollbar {
-    width: 6px;
+    width: 0px;
 }
 
 .main-feed::-webkit-scrollbar-track {
@@ -309,7 +309,9 @@ div {
 }
 
 .main-feed::-webkit-scrollbar-thumb {
-    background-color: #cbd5e1;
+    /* background-color: #cbd5e1; */
+        background-color: transparent;
+
     border-radius: 10px;
 }
 
@@ -883,7 +885,8 @@ div {
 }
 
 .profile-scroll-wrapper::-webkit-scrollbar-thumb {
-    background-color: #cbd5e1;
+    background-color: transparent;
+    /* background-color: #cbd5e1; */
     border-radius: 10px;
 }
 

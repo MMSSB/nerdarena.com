@@ -340,7 +340,8 @@ function setupGlobalSearch() {
         clearTimeout(searchTimeout);
         if (query.length < 2) { dropdownMenu.classList.remove('show'); return; }
 
-        dropdownMenu.innerHTML = `<div style="padding: 15px; text-align: center; color: var(--text-muted);"><i class="ri-loader-4-line ri-spin"></i> Searching Arena...</div>`;
+        dropdownMenu.innerHTML = `<div style="padding: 15px; text-align: center; color: var(--text-muted);"><i class="fa-solid fa-circle-notch fa-spin"></i> Searching Arena...</div>`;
+        // dropdownMenu.innerHTML = `<div style="padding: 15px; text-align: center; color: var(--text-muted);"><i class="ri-loader-4-line ri-spin"></i> Searching Arena...</div>`;
         dropdownMenu.classList.add('show');
         searchTimeout = setTimeout(() => performLiveSearch(query, dropdownMenu), 400);
     });
@@ -361,53 +362,102 @@ async function performLiveSearch(query, dropdown) {
         let resultsHTML = '';
         let matchCount = 0;
 
+        // --- 1. SAFE USER SEARCH ---
         const usersSnap = await getDocs(collection(db, "users"));
         let userMatches = [];
+        
         usersSnap.forEach(doc => {
             const u = doc.data();
-            if (u.fullname.toLowerCase().includes(query) || u.username.toLowerCase().includes(query)) userMatches.push(u);
+            // ENHANCEMENT: Null-safe fallbacks prevent the script from crashing
+            const fname = (u.fullname || '').toLowerCase();
+            const uname = (u.username || '').toLowerCase();
+            
+            if (fname.includes(query) || uname.includes(query)) {
+                u.uid = u.uid || doc.id; // Guarantee an ID exists for the routing
+                userMatches.push(u);
+            }
         });
 
         if (userMatches.length > 0) {
             resultsHTML += `<div class="live-search-group-title">Nerds</div>`;
             userMatches.slice(0, 3).forEach(u => {
                 matchCount++;
-                let avatar = u.avatarClass?.includes('url(') ? `style="background:${u.avatarClass}; background-size:cover;"` : `class="avatar-text ${u.avatarClass || 'bg-blue'}"`;
-                let content = u.avatarClass?.includes('url(') ? '' : u.fullname.substring(0,2).toUpperCase();
+                
+                // ENHANCEMENT: Fallbacks for UI rendering
+                const safeName = u.fullname || 'Unknown Nerd';
+                const safeUsername = u.username || 'unknown';
+                const initials = safeName.substring(0, 2).toUpperCase();
+                
+                let avatar = u.avatarClass?.includes('url(') 
+                    ? `style="background:${u.avatarClass}; background-size:cover;"` 
+                    : `class="avatar-text ${u.avatarClass || 'bg-blue'}"`;
+                let content = u.avatarClass?.includes('url(') ? '' : initials;
+                
                 resultsHTML += `
                     <div class="live-search-item" onclick="window.location.href='user.html?id=${u.uid}'">
                         <div ${avatar}>${content}</div>
-                        <div class="live-search-info"><strong>${u.fullname}</strong><span>@${u.username}</span></div>
+                        <div class="live-search-info">
+                            <strong>${safeName}</strong>
+                            <span>@${safeUsername}</span>
+                        </div>
                     </div>`;
             });
         }
 
+        // --- 2. SAFE POST SEARCH ---
         const postsSnap = await getDocs(collection(db, "posts"));
         let postMatches = [];
+        
         postsSnap.forEach(doc => {
-            const p = doc.data(); p.id = doc.id;
-            if (p.content.toLowerCase().includes(query) || p.authorName.toLowerCase().includes(query)) postMatches.push(p);
+            const p = doc.data(); 
+            p.id = doc.id;
+            
+            // ENHANCEMENT: Null-safe checks for post data
+            const contentText = (p.content || '').toLowerCase();
+            const authorName = (p.authorName || '').toLowerCase();
+            
+            if (contentText.includes(query) || authorName.includes(query)) {
+                postMatches.push(p);
+            }
         });
 
         if (postMatches.length > 0) {
-            resultsHTML += `<div class="live-search-group-title">Pitches</div>`;
+            resultsHTML += `<div class="live-search-group-title">Posts</div>`;
             postMatches.slice(0, 3).forEach(p => {
                 matchCount++;
+                
+                // ENHANCEMENT: Clean text truncation
+                const safeContent = p.content || '';
+                const previewText = safeContent.substring(0, 35) + (safeContent.length > 35 ? '...' : '');
+                const safeAuthor = p.authorName || 'Anonymous';
+
                 resultsHTML += `
                     <div class="live-search-item" onclick="window.location.href='post.html?id=${p.id}'">
-                        <div class="avatar-text" style="background:var(--bg-color); color:var(--text-muted);"><i class="ri-terminal-box-line"></i></div>
-                        <div class="live-search-info"><strong>${p.content.substring(0, 30)}...</strong><span>by ${p.authorName}</span></div>
+                        <div class="avatar-text" style="background:var(--bg-color); color:var(--text-muted);">
+                            <i class="ri-terminal-box-line"></i>
+                        </div>
+                        <div class="live-search-info">
+                            <strong>${previewText}</strong>
+                            <span>by ${safeAuthor}</span>
+                        </div>
                     </div>`;
             });
         }
 
+        // --- 3. RENDER RESULTS ---
         if (matchCount === 0) {
-            dropdown.innerHTML = `<div style="padding: 15px; text-align: center; color: var(--text-muted);">No results found.</div>`;
+            dropdown.innerHTML = `<div style="padding: 15px; text-align: center; color: var(--text-muted);">No records found in the Arena.</div>`;
         } else {
-            resultsHTML += `<div class="live-search-footer" onclick="window.location.href='search.html?q=${encodeURIComponent(query)}'">See all results for "${query}" <i class="ri-arrow-right-line"></i></div>`;
+            resultsHTML += `
+                <div class="live-search-footer" onclick="window.location.href='search.html?q=${encodeURIComponent(query)}'">
+                    See all results for "${query}" <i class="ri-arrow-right-line"></i>
+                </div>`;
             dropdown.innerHTML = resultsHTML;
         }
+
     } catch (error) { 
-        dropdown.innerHTML = `<div style="padding: 15px; text-align: center; color: #dc2626;">Search failed.</div>`; 
+        // ENHANCEMENT: Log the actual error to the console so it isn't swallowed
+        console.error("Live Search Error:", error);
+        dropdown.innerHTML = `<div style="padding: 15px; text-align: center; color: #dc2626;">Search failed. Check console for details.</div>`; 
     }
 }
