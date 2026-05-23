@@ -1452,106 +1452,164 @@
 
 // post.js - Pure Javascript Social Engine with Modern UI
 import { db, auth } from './firebase.js';
-import { doc, getDoc, updateDoc, deleteDoc, arrayUnion, arrayRemove, onSnapshot, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+import { doc, getDoc, updateDoc, deleteDoc, arrayUnion, arrayRemove, onSnapshot, collection, addDoc, deleteField } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-// Cache for downloaded user profiles to avoid repeated requests
 export const userCache = {};
 
+// Global variables for Link Preview State
+window.currentLinkPreview = null;
+window.rejectedLinkPreviews = []; // Remembers links you closed so they don't auto-reload
+
 // ============================================================================
-// PART 1: CUSTOM UI ALERTS, PROMPTS, AND TIME HELPERS
+// PART 1: CUSTOM UI, STYLES & LINK PREVIEW ENGINE
 // ============================================================================
+
+function injectPostStyles() {
+    if (document.getElementById('post-dynamic-styles')) return;
+    const style = document.createElement('style');
+    style.id = 'post-dynamic-styles';
+    style.innerHTML = `
+        /* --- Facebook-style Link Previews --- */
+        .fb-link-card {
+            display: block; border: 1px solid var(--border-color); border-radius: 12px;
+            overflow: hidden; margin-top: 15px; text-decoration: none; background: var(--bg-color);
+            transition: 0.2s; box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+        }
+        .fb-link-card:hover { border-color: var(--primary-color); box-shadow: 0 8px 20px rgba(0,0,0,0.06); transform: translateY(-2px); }
+        .fb-link-img {
+            width: 100%; height: 220px; object-fit: cover; background: #e5e7eb;
+            border-bottom: 1px solid var(--border-color); display: block;
+        }
+        .fb-link-info { padding: 12px 16px; }
+        .fb-link-domain { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block; font-weight: 700; }
+        .fb-link-title { font-size: 1.05rem; color: var(--text-main); font-weight: 700; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .fb-link-desc { font-size: 0.9rem; color: var(--text-muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.4; }
+        
+        /* Live Preview Draft Box */
+        .live-preview-box { position: relative; margin-top: 10px; display: none; animation: fadeInUp 0.3s ease; }
+        .live-preview-box.active { display: block; }
+        .remove-preview-btn {
+            position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white;
+            width: 28px; height: 28px; border-radius: 50%; display: flex; justify-content: center; align-items: center;
+            cursor: pointer; z-index: 10; transition: 0.2s; border: none; font-size: 1.2rem;
+        }
+        .remove-preview-btn:hover { background: #dc2626; transform: scale(1.1); }
+        .preview-loading { padding: 20px; text-align: center; color: var(--text-muted); font-size: 0.9rem; font-weight: 600; border: 1px dashed var(--border-color); border-radius: 12px; margin-top: 10px; }
+    `;
+    document.head.appendChild(style);
+}
+
+// Fetch OpenGraph data for the link
+async function fetchLinkPreview(url, previewContainer) {
+    if (window.currentLinkPreview && window.currentLinkPreview.url === url) return; 
+    
+    previewContainer.innerHTML = `<div class="preview-loading"><i class="ri-loader-4-line ri-spin"></i> Generating Link Preview...</div>`;
+    previewContainer.classList.add('active');
+
+    try {
+        const res = await fetch(`https://api.microlink.io/?url=${encodeURIComponent(url)}`);
+        const data = await res.json();
+        
+        if (data.status === 'success') {
+            const domain = new URL(url).hostname.replace('www.', '');
+            window.currentLinkPreview = {
+                url: url,
+                title: data.data.title || domain,
+                description: data.data.description || '',
+                image: data.data.image?.url || `https://s2.googleusercontent.com/s2/favicons?domain=${domain}&sz=256`,
+                domain: domain
+            };
+
+            previewContainer.innerHTML = `
+                <button class="remove-preview-btn" onclick="window.clearLivePreview(this)"><i class="ri-close-line"></i></button>
+                <div class="fb-link-card" style="margin-top: 0;">
+                    <img src="${window.currentLinkPreview.image}" class="fb-link-img" onerror="this.src='https://s2.googleusercontent.com/s2/favicons?domain=${domain}&sz=256'; this.style.objectFit='contain'; this.style.padding='20px';">
+                    <div class="fb-link-info">
+                        <span class="fb-link-domain">${window.currentLinkPreview.domain}</span>
+                        <div class="fb-link-title">${window.currentLinkPreview.title}</div>
+                        <div class="fb-link-desc">${window.currentLinkPreview.description}</div>
+                    </div>
+                </div>
+            `;
+        } else {
+            previewContainer.classList.remove('active');
+            window.currentLinkPreview = null;
+        }
+    } catch (error) {
+        previewContainer.classList.remove('active');
+        window.currentLinkPreview = null;
+    }
+}
+
+// Global function to remove the live preview while drafting
+window.clearLivePreview = function(btnElement) {
+    if (window.currentLinkPreview) {
+        // Remember that the user closed this link so we don't auto-fetch it while they type
+        if (!window.rejectedLinkPreviews.includes(window.currentLinkPreview.url)) {
+            window.rejectedLinkPreviews.push(window.currentLinkPreview.url);
+        }
+    }
+    
+    window.currentLinkPreview = null;
+    const container = btnElement.closest('.live-preview-box');
+    if (container) {
+        container.innerHTML = '';
+        container.classList.remove('active');
+    }
+};
 
 function formatDateTime(isoString) {
     if (!isoString) return 'Just now';
     const date = new Date(isoString);
     const today = new Date();
     const isToday = date.getDate() === today.getDate() && date.getMonth() === today.getMonth() && date.getFullYear() === today.getFullYear();
-    
     const timeOptions = { hour: 'numeric', minute: '2-digit', hour12: true };
     const timeStr = date.toLocaleTimeString(undefined, timeOptions);
-    
     if (isToday) return `Today at ${timeStr}`;
     return `${date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} at ${timeStr}`;
 }
 
+// Reusable Modals
 function showCustomConfirm(message, onConfirm) {
     const overlay = document.createElement('div');
     overlay.className = 'post-modal-overlay active';
     overlay.style.zIndex = '999999';
-    overlay.innerHTML = `
-        <div class="post-modal" style="max-width: 400px; text-align: center; padding: 30px;">
-            <i class="ri-error-warning-line text-danger" style="font-size: 3rem; margin-bottom: 15px;"></i>
-            <h3 style="color: var(--text-main); margin-bottom: 10px;">Are you sure?</h3>
-            <p style="color: var(--text-muted); margin-bottom: 25px;">${message}</p>
-            <div style="display: flex; gap: 15px; justify-content: center;">
-                <button id="cancel-btn" style="flex: 1; padding: 12px; border-radius: 12px; background: transparent; border: 2px solid var(--border-color); color: var(--text-main); font-weight: 600; cursor: pointer;">Cancel</button>
-                <button id="confirm-btn" style="flex: 1; padding: 12px; border-radius: 12px; background: #dc2626; color: white; border: none; font-weight: 600; cursor: pointer;">Yes, Delete</button>
-            </div>
-        </div>
-    `;
+    overlay.innerHTML = `<div class="post-modal" style="max-width: 400px; text-align: center; padding: 30px;"><i class="ri-error-warning-line text-danger" style="font-size: 3rem; margin-bottom: 15px;"></i><h3 style="color: var(--text-main); margin-bottom: 10px;">Are you sure?</h3><p style="color: var(--text-muted); margin-bottom: 25px;">${message}</p><div style="display: flex; gap: 15px; justify-content: center;"><button id="cancel-btn" style="flex: 1; padding: 12px; border-radius: 12px; background: transparent; border: 2px solid var(--border-color); color: var(--text-main); font-weight: 600; cursor: pointer;">Cancel</button><button id="confirm-btn" style="flex: 1; padding: 12px; border-radius: 12px; background: #dc2626; color: white; border: none; font-weight: 600; cursor: pointer;">Yes, Delete</button></div></div>`;
     document.body.appendChild(overlay);
-
     overlay.querySelector('#cancel-btn').onclick = () => overlay.remove();
-    overlay.querySelector('#confirm-btn').onclick = () => {
-        onConfirm();
-        overlay.remove();
-    };
+    overlay.querySelector('#confirm-btn').onclick = () => { onConfirm(); overlay.remove(); };
 }
 
 function showCustomPrompt(message, defaultValue, onSave) {
     const overlay = document.createElement('div');
     overlay.className = 'post-modal-overlay active';
     overlay.style.zIndex = '999999';
-    overlay.innerHTML = `
-        <div class="post-modal" style="max-width: 500px; padding: 25px;">
-            <h3 style="color: var(--text-main); margin-bottom: 15px;">${message}</h3>
-            <textarea id="prompt-input" style="width: 100%; min-height: 100px; padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-main); font-family: inherit; font-size: 1rem; resize: none; margin-bottom: 20px; outline: none;"></textarea>
-            <div style="display: flex; gap: 15px; justify-content: flex-end;">
-                <button id="cancel-btn" style="padding: 10px 20px; border-radius: 12px; background: transparent; border: 2px solid var(--border-color); color: var(--text-main); font-weight: 600; cursor: pointer;">Cancel</button>
-                <button id="save-btn" style="padding: 10px 20px; border-radius: 12px; background: var(--primary-color); color: white; border: none; font-weight: 600; cursor: pointer;">Save Changes</button>
-            </div>
-        </div>
-    `;
+    overlay.innerHTML = `<div class="post-modal" style="max-width: 500px; padding: 25px;"><h3 style="color: var(--text-main); margin-bottom: 15px;">${message}</h3><textarea id="prompt-input" style="width: 100%; min-height: 100px; padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-main); font-family: inherit; font-size: 1rem; resize: none; margin-bottom: 20px; outline: none;"></textarea><div style="display: flex; gap: 15px; justify-content: flex-end;"><button id="cancel-btn" style="padding: 10px 20px; border-radius: 12px; background: transparent; border: 2px solid var(--border-color); color: var(--text-main); font-weight: 600; cursor: pointer;">Cancel</button><button id="save-btn" style="padding: 10px 20px; border-radius: 12px; background: var(--primary-color); color: white; border: none; font-weight: 600; cursor: pointer;">Save Changes</button></div></div>`;
     document.body.appendChild(overlay);
-    
     const input = overlay.querySelector('#prompt-input');
-    input.value = defaultValue;
-    input.focus();
-
+    input.value = defaultValue; input.focus();
     overlay.querySelector('#cancel-btn').onclick = () => overlay.remove();
-    overlay.querySelector('#save-btn').onclick = () => {
-        onSave(input.value);
-        overlay.remove();
-    };
+    overlay.querySelector('#save-btn').onclick = () => { onSave(input.value); overlay.remove(); };
 }
 
 // ============================================================================
-// PART 2: THE GLOBAL POST ENGINE (Formatting & HTML Generation)
+// PART 2: THE GLOBAL POST ENGINE
 // ============================================================================
 
-export function formatContent(text) {
+export function formatContent(text, ignoreUrls = false) {
     if (!text) return "";
     let safe = text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
     safe = safe.replace(/```([\s\S]*?)```/g, '<div class="code-block"><pre><code>$1</code></pre></div>');
     safe = safe.replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>');
     safe = safe.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
     
-    const urlRegex = /(https?:\/\/[^\s]+)/g;
-    safe = safe.replace(urlRegex, (url) => {
-        try {
-            const domain = new URL(url).hostname;
-            return `
-            <a href="${url}" target="_blank" class="rich-link-card" style="display: flex; align-items: center; gap: 15px; padding: 12px; margin: 15px 0; border: 1px solid var(--border-color); border-radius: 12px; background: var(--bg-color); text-decoration: none; transition: 0.2s;">
-                <div style="width: 45px; height: 45px; border-radius: 10px; background: white; display: flex; justify-content: center; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); flex-shrink: 0;">
-                    <img src="https://s2.googleusercontent.com/s2/favicons?domain=${domain}&sz=64" alt="icon" style="width: 24px; height: 24px;">
-                </div>
-                <div style="display: flex; flex-direction: column; overflow: hidden;">
-                    <strong style="font-size: 1rem; color: var(--text-main); white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">${domain}</strong>
-                    <span style="font-size: 0.85rem; color: var(--primary-color); white-space: nowrap; text-overflow: ellipsis; overflow: hidden; margin-top: 2px;">View Website <i class="ri-arrow-right-up-line"></i></span>
-                </div>
-            </a>`;
-        } catch(e) { return `<a href="${url}" target="_blank" class="rich-link">${url}</a>`; }
-    });
+    // Always format inline URLs unless we are generating a standalone Rich Card from an API
+    if (!ignoreUrls) {
+        const urlRegex = /(https?:\/\/[^\s]+)/g;
+        safe = safe.replace(urlRegex, (url) => {
+            return `<a href="${url}" target="_blank" class="rich-link" style="color: var(--primary-color); text-decoration: underline;">${url}</a>`;
+        });
+    }
     return safe.replace(/\n/g, '<br>');
 }
 
@@ -1563,6 +1621,24 @@ export function createPostHTML(post, postId, currentUserId) {
     const editedTag = post.edited ? '<span style="font-size: 0.75rem; color: var(--text-muted);">(edited)</span>' : '';
     
     let commentsHTML = commentsList.map(c => createCommentHTML(c, postId, currentUserId)).join('');
+
+    // --- RENDER FACEBOOK STYLE PREVIEW CARD IF DATA EXISTS ---
+    let previewCardHTML = '';
+    // Format text, leaving URLs intact in the text block
+    let contentText = formatContent(post.content, false);
+
+    if (post.linkPreview) {
+        previewCardHTML = `
+            <a href="${post.linkPreview.url}" target="_blank" class="fb-link-card">
+                <img src="${post.linkPreview.image}" class="fb-link-img" onerror="this.src='https://s2.googleusercontent.com/s2/favicons?domain=${post.linkPreview.domain}&sz=256'; this.style.objectFit='contain'; this.style.padding='20px';">
+                <div class="fb-link-info">
+                    <span class="fb-link-domain">${post.linkPreview.domain}</span>
+                    <div class="fb-link-title">${post.linkPreview.title}</div>
+                    <div class="fb-link-desc">${post.linkPreview.description}</div>
+                </div>
+            </a>
+        `;
+    }
 
     const dropdownHTML = `
         <div class="post-options-container">
@@ -1595,7 +1671,12 @@ export function createPostHTML(post, postId, currentUserId) {
                 </div>
                 ${dropdownHTML}
             </div>
-            <div class="post-content"><p>${formatContent(post.content)}</p></div>
+            
+            <div class="post-content">
+                <p>${contentText}</p>
+                ${previewCardHTML}
+            </div>
+            
             <div class="post-footer">
                 <div class="likes ${isLiked ? '' : 'unliked'}" data-id="${postId}" data-liked="${isLiked}">
                     <i class="${isLiked ? 'ph-fill' : 'ph'} ph-rocket"></i> Upvote <span>${post.likedBy ? post.likedBy.length : 0}</span>
@@ -1654,8 +1735,7 @@ export async function renderDynamicAuthor(authorId, postId, commId = null) {
         setTimeout(() => {
             const postCard = document.querySelector(`.card.post[data-postid="${postId}"]`);
             if (postCard) {
-                const commentNames = postCard.querySelectorAll('.dyn-comment-name');
-                commentNames.forEach(el => {
+                postCard.querySelectorAll('.dyn-comment-name').forEach(el => {
                     const cAuthorId = el.getAttribute('data-authorid');
                     const cId = el.getAttribute('data-commid');
                     if (cAuthorId && cId) renderDynamicAuthor(cAuthorId, postId, cId); 
@@ -1724,9 +1804,14 @@ function injectModalHTML() {
                 <div class="avatar-text bg-primary modal-user-avatar">...</div>
                 <i class="ri-close-line close-post-modal" id="close-modal-btn"></i>
             </div>
-            <textarea id="modal-post-textarea" placeholder="Post your idea, architecture, or project roadmap..."></textarea>
-            <div class="post-actions" style="margin-top: auto;">
+            
+            <textarea id="modal-post-textarea" placeholder="What do you want to build? Post ideas, architecture, links..."></textarea>
+            
+            <div id="modal-link-preview" class="live-preview-box"></div>
+            
+            <div class="post-actions" style="margin-top: 15px;">
                 <div class="action-icons">
+                    <span title="Load Link Preview" class="preview-trigger-btn markdown-btn"><i class="ph ph-link"></i></span> 
                     <span title="Add Code Snippet" class="markdown-btn"><i class="ph ph-code-block"></i></span> 
                     <span title="Format Markdown" class="markdown-btn"><i class="ph ph-text-b"></i></span> 
                 </div>
@@ -1762,6 +1847,7 @@ function closeModal() {
         overlay.classList.remove('active');
         overlay.querySelector('.post-modal').style.transform = ''; 
         document.getElementById('modal-post-textarea').value = ''; 
+        window.clearLivePreview(document.getElementById('modal-link-preview'));
     }
 }
 
@@ -1790,7 +1876,71 @@ function setupModalDragLogic() {
 export function initGlobalPostListeners() {
     if (window.postEngineListenersAttached) return;
     window.postEngineListenersAttached = true;
+    injectPostStyles(); 
     injectModalHTML();
+
+    // Setup Live Preview listeners for standalone page if it exists
+    const standaloneTextarea = document.getElementById('standalone-post-textarea');
+    if (standaloneTextarea) {
+        if (!document.getElementById('standalone-link-preview')) {
+            standaloneTextarea.insertAdjacentHTML('afterend', '<div id="standalone-link-preview" class="live-preview-box"></div>');
+        }
+        const actionIcons = standaloneTextarea.closest('.card')?.querySelector('.action-icons');
+        if (actionIcons && !actionIcons.querySelector('.preview-trigger-btn')) {
+            actionIcons.insertAdjacentHTML('afterbegin', '<span title="Load Link Preview" class="preview-trigger-btn markdown-btn"><i class="ph ph-link"></i></span> ');
+        }
+    }
+
+    // 1. SMART KEYBOARD SHORTCUTS (Ctrl+B)
+    document.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'b') {
+            const activeEl = document.activeElement;
+            if (activeEl && activeEl.tagName === 'TEXTAREA') {
+                e.preventDefault(); 
+                const start = activeEl.selectionStart; const end = activeEl.selectionEnd;
+                const val = activeEl.value; const selectedText = val.substring(start, end);
+                let injection = ''; let newStart = 0; let newEnd = 0;
+                
+                if (selectedText.length > 0) {
+                    injection = `**${selectedText}**`;
+                    newStart = newEnd = start + injection.length;
+                } else {
+                    injection = "**bold**";
+                    newStart = start + 2; newEnd = start + 6;
+                }
+                
+                activeEl.value = val.substring(0, start) + injection + val.substring(end);
+                activeEl.selectionStart = newStart; activeEl.selectionEnd = newEnd;
+                activeEl.dispatchEvent(new Event('input'));
+            }
+        }
+    });
+
+    // 2. LIVE URL DETECTION LISTENER (Debounced)
+    let typingTimer;
+    document.addEventListener('input', (e) => {
+        if (e.target.tagName === 'TEXTAREA' && (e.target.id === 'modal-post-textarea' || e.target.id === 'standalone-post-textarea')) {
+            clearTimeout(typingTimer);
+            typingTimer = setTimeout(() => {
+                const text = e.target.value;
+                const urlRegex = /(https?:\/\/[^\s]+)/;
+                const match = text.match(urlRegex);
+                
+                const previewContainer = e.target.id === 'modal-post-textarea' 
+                    ? document.getElementById('modal-link-preview') 
+                    : document.getElementById('standalone-link-preview');
+                
+                // Only auto-fetch if we found a URL, it's different from the current one, AND the user hasn't actively rejected it
+                if (match && previewContainer && (!window.currentLinkPreview || window.currentLinkPreview.url !== match[0])) {
+                    if (!window.rejectedLinkPreviews.includes(match[0])) {
+                        fetchLinkPreview(match[0], previewContainer);
+                    }
+                } else if (!match && previewContainer && window.currentLinkPreview) {
+                    window.clearLivePreview(previewContainer);
+                }
+            }, 800); // 800ms debounce
+        }
+    });
 
     document.addEventListener('click', async (e) => {
         const t = e.target;
@@ -1810,18 +1960,26 @@ export function initGlobalPostListeners() {
             if (!content || !window.currentUserData) return;
             
             btnPost.disabled = true; btnPost.innerText = "Posting...";
+            
+            const payload = {
+                authorId: window.currentUserData.uid,
+                content: content, likedBy: [], comments: [],
+                timestamp: new Date().toISOString()
+            };
+            
+            // Attach link preview data explicitly
+            if (window.currentLinkPreview) {
+                payload.linkPreview = window.currentLinkPreview;
+            }
+
             try {
-                await addDoc(collection(db, "posts"), {
-                    authorId: window.currentUserData.uid,
-                    content: content, likedBy: [], comments: [],
-                    timestamp: new Date().toISOString()
-                });
+                await addDoc(collection(db, "posts"), payload);
                 closeModal(); 
             } catch (error) {} finally { btnPost.disabled = false; btnPost.innerText = "Post Idea"; }
             return;
         }
 
-        // Markdown Buttons
+        // 3. SMART MARKDOWN & PREVIEW BUTTONS
         const actionIcon = t.closest('.markdown-btn');
         if (actionIcon) {
             const title = actionIcon.getAttribute('title');
@@ -1830,13 +1988,52 @@ export function initGlobalPostListeners() {
             if (!textarea) textarea = document.querySelector('.create-post textarea');
             if (!textarea) return;
 
-            let injection = '';
-            if (title && title.includes("Code")) injection = "\n```\n// Paste your code here\n```\n";
-            if (title && title.includes("Format")) injection = "**Bold Text**";
+            // Manual Link Preview Trigger
+            if (title && title.includes("Link")) {
+                const urlRegex = /(https?:\/\/[^\s]+)/;
+                const match = textarea.value.match(urlRegex);
+                
+                if (match) {
+                    const previewContainer = textarea.id === 'modal-post-textarea' 
+                        ? document.getElementById('modal-link-preview') 
+                        : document.getElementById('standalone-link-preview');
+                    if (previewContainer) {
+                        // Un-reject the link so it can be loaded again
+                        window.rejectedLinkPreviews = window.rejectedLinkPreviews.filter(u => u !== match[0]);
+                        window.currentLinkPreview = null; 
+                        fetchLinkPreview(match[0], previewContainer);
+                    }
+                } else {
+                    alert("No valid URL found in your text.");
+                }
+                return;
+            }
+
+            const start = textarea.selectionStart; const end = textarea.selectionEnd;
+            const val = textarea.value; const selectedText = val.substring(start, end);
+            let injection = ''; let newStart = start; let newEnd = end;
+
+            if (title && title.includes("Code")) {
+                if (selectedText.length > 0) {
+                    injection = `\n\`\`\`\n${selectedText}\n\`\`\`\n`;
+                    newStart = newEnd = start + injection.length;
+                } else {
+                    injection = "\n```\n// Paste your code here\n```\n";
+                    newStart = start + 5; newEnd = start + 27;
+                }
+            }
+            if (title && title.includes("Format")) {
+                if (selectedText.length > 0) {
+                    injection = `**${selectedText}**`;
+                    newStart = newEnd = start + injection.length;
+                } else {
+                    injection = "**bold**";
+                    newStart = start + 2; newEnd = start + 6;
+                }
+            }
             
-            const start = textarea.selectionStart; const end = textarea.selectionEnd; const val = textarea.value;
             textarea.value = val.substring(0, start) + injection + val.substring(end);
-            textarea.selectionStart = textarea.selectionEnd = start + injection.length;
+            textarea.selectionStart = newStart; textarea.selectionEnd = newEnd;
             textarea.focus(); textarea.dispatchEvent(new Event('input'));
             return;
         }
@@ -1846,21 +2043,38 @@ export function initGlobalPostListeners() {
             const btnPost = t;
             const postTextarea = document.getElementById('standalone-post-textarea');
             const content = postTextarea.value.trim();
-            const editId = btnPost.getAttribute('data-edit-id'); // Checks if we are editing
+            const editId = btnPost.getAttribute('data-edit-id'); 
             
             if (!content || !window.currentUserData) return;
             
             btnPost.disabled = true; btnPost.innerText = editId ? "Saving..." : "Posting...";
+            
+            const payload = { content: content };
+            if (!editId) {
+                payload.authorId = window.currentUserData.uid;
+                payload.likedBy = []; payload.comments = [];
+                payload.timestamp = new Date().toISOString();
+            } else {
+                payload.edited = true;
+                payload.lastEdited = new Date().toISOString();
+            }
+
+            // Explicitly handle Preview logic for Edit vs Create
+            if (window.currentLinkPreview) {
+                payload.linkPreview = window.currentLinkPreview;
+            } else if (editId) {
+                // If user X'd out the preview during an edit, wipe it from Firestore
+                payload.linkPreview = deleteField();
+            }
+
             try {
                 if (editId) {
-                    await updateDoc(doc(db, "posts", editId), {
-                        content: content, edited: true, lastEdited: new Date().toISOString()
-                    });
+                    await updateDoc(doc(db, "posts", editId), payload);
                 } else {
-                    await addDoc(collection(db, "posts"), {
-                        authorId: window.currentUserData.uid, content: content, likedBy: [], comments: [], timestamp: new Date().toISOString()
-                    });
+                    await addDoc(collection(db, "posts"), payload);
                 }
+                window.currentLinkPreview = null; 
+                window.rejectedLinkPreviews = [];
                 window.location.href = 'index.html'; 
             } catch (error) {} finally { btnPost.disabled = false; btnPost.innerText = editId ? "Save Changes" : "Post Idea"; }
             return;
@@ -1972,7 +2186,7 @@ export function initGlobalPostListeners() {
             return;
         }
 
-        // --- EDIT POST REDIRECT ---
+        // Edit Post
         if (t.closest('.edit-post-btn')) {
             const postId = t.closest('.edit-post-btn').getAttribute('data-id');
             window.location.href = `create-post.html?edit=${postId}`;
@@ -2016,31 +2230,50 @@ export function initGlobalPostListeners() {
 }
 
 // ============================================================================
-// PART 5: PAGE-SPECIFIC INITIALIZATIONS (Single Post & Edit Mode)
+// PART 5: PAGE-SPECIFIC INITIALIZATIONS
 // ============================================================================
 
 document.addEventListener('userDataLoaded', async () => {
     initGlobalPostListeners(); 
     const urlParams = new URLSearchParams(window.location.search);
 
-    // 1. Check if we are in EDIT MODE on create-post.html
     const editId = urlParams.get('edit');
     const standaloneTextarea = document.getElementById('standalone-post-textarea');
     const standaloneSubmit = document.getElementById('standalone-submit-post');
+    const standalonePreviewBox = document.getElementById('standalone-link-preview');
     
+    // EDIT MODE LOGIC
     if (editId && standaloneTextarea && standaloneSubmit) {
         standaloneSubmit.innerText = "Save Changes";
         standaloneSubmit.setAttribute('data-edit-id', editId);
         
-        // Update the header visually if on create-post.html
         const headerTitle = document.querySelector('.fb-header h3');
         if (headerTitle) headerTitle.innerText = "Edit Pitch";
 
         try {
             const docSnap = await getDoc(doc(db, "posts", editId));
             if (docSnap.exists() && docSnap.data().authorId === window.currentUserData.uid) {
-                standaloneTextarea.value = docSnap.data().content;
-                standaloneTextarea.dispatchEvent(new Event('input')); // Enable button
+                const postData = docSnap.data();
+                standaloneTextarea.value = postData.content;
+                
+                // Preload existing link preview
+                if (postData.linkPreview && standalonePreviewBox) {
+                    window.currentLinkPreview = postData.linkPreview;
+                    standalonePreviewBox.innerHTML = `
+                        <button class="remove-preview-btn" onclick="window.clearLivePreview(this)"><i class="ri-close-line"></i></button>
+                        <div class="fb-link-card" style="margin-top: 0;">
+                            <img src="${postData.linkPreview.image}" class="fb-link-img" onerror="this.src='https://s2.googleusercontent.com/s2/favicons?domain=${postData.linkPreview.domain}&sz=256'; this.style.objectFit='contain'; this.style.padding='20px';">
+                            <div class="fb-link-info">
+                                <span class="fb-link-domain">${postData.linkPreview.domain}</span>
+                                <div class="fb-link-title">${postData.linkPreview.title}</div>
+                                <div class="fb-link-desc">${postData.linkPreview.description}</div>
+                            </div>
+                        </div>
+                    `;
+                    standalonePreviewBox.classList.add('active');
+                }
+
+                standaloneTextarea.dispatchEvent(new Event('input')); 
             } else {
                 alert("You are not authorized to edit this post.");
                 window.location.href = "index.html";
@@ -2048,7 +2281,7 @@ document.addEventListener('userDataLoaded', async () => {
         } catch (e) { console.error(e); }
     }
 
-    // 2. Check if we are on SINGLE POST PAGE (post.html)
+    // SINGLE POST VIEW LOGIC
     const container = document.getElementById('single-post-container');
     const targetPostId = urlParams.get('id');
 
