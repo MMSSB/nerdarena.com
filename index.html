@@ -9,6 +9,10 @@
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <link rel="stylesheet" href="style.css">
     <script src="theme.js"></script>
+        <script type="module" src="gdrive.js"></script>
+    <script type="module" src="pload.js"></script>
+<script type="module" src="greetings.js"></script>
+    <script type="module" src="app.js"></script>
     <style>
         @media (max-width: 768px) {
     .sidebar-nav {
@@ -97,6 +101,7 @@
 <section class="main-feed">
             
             <div class="feed-header animate-fade-in" id="greeting-wrapper">
+                <br>
                 <h2 id="smart-greeting-text">  
                     <!-- <i class="fa-solid fa-circle-notch fa-spin"></i> -->
                 </h2>
@@ -107,12 +112,16 @@
             <div class="card create-post animate-fade-in">
                 <div class="post-input-wrapper">
                     <div class="avatar-text bg-primary">...</div>
-                    <textarea placeholder="Post your idea, architecture, or project roadmap..." rows="2"></textarea>
+                    <!-- <textarea placeholder="Post your idea, architecture, or project roadmap..." rows="2"></textarea> -->
+                     <textarea id="post-modal" readonly placeholder="Post your idea..."></textarea>
+
                 </div>
                 <div class="post-actions">
                     <div class="action-icons">
-                        <span title="Add Code Snippet"><i class="ph ph-code-block"></i></span> 
-                        <span title="Format Markdown"><i class="ph ph-text-b"></i></span> 
+                        <span id="post-modal" ><i class="ph ph-code-block"></i></span> 
+                        <span id="post-modal" ><i class="ph ph-text-b"></i></span> 
+                        <!-- <span id="post-modal" title="Add Code Snippet"><i class="ph ph-code-block"></i></span> 
+                        <span id="post-modal" title="Format Markdown"><i class="ph ph-text-b"></i></span>  -->
                     </div>
                     <button class="btn-post">Post Idea</button>
                 </div>
@@ -139,6 +148,7 @@
                     <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.4;">.</p>
                     <span style="font-size: 0.75rem; color: var(--primary-color); font-weight: 700; margin-top: 8px; display: inline-block;">.</span>
                 </div>
+                
             </div>
 
             <!-- <div class="mini-footer animate-fade-in" style="animation-delay: 0.3s;">
@@ -175,14 +185,18 @@
         </a>
     </nav>
 
-    <button class="action-sphere" onclick="document.querySelector('.create-post textarea').focus();">
+    <!-- <button class="action-sphere" onclick="document.querySelector('.create-post textarea').focus();">
         <i class="ph ph-plus"></i>
-    </button>
+    </button> -->
+    <!-- <button class="action-sphere">
+    <i class="ph ph-plus"></i>
+</button> -->
+<button class="action-sphere" id="post-modal">
+    <i class="ph ph-plus"></i>
+</button>
+
 </div>
-    <script type="module" src="gdrive.js"></script>
-    <script type="module" src="pload.js"></script>
-<script type="module" src="greetings.js"></script>
-    <script type="module" src="app.js"></script>
+
 </body>
 </html></body>
 </html>

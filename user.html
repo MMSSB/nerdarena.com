@@ -19,7 +19,9 @@
         <a href="index.html"><div class="logo"><i class="ph-fill ph-code"></i> <span>Nerd Arena</span></div></a>
 
         <div class="search-container">
-            <span class="search-icon"><i class="ph ph-magnifying-glass"></i></span>
+            <span class="search-icon">
+                <!-- <i class="ph ph-magnifying-glass"></i> -->
+            </span>
             <input type="text" placeholder="Search ideas, tech stacks, or nerds...">
         </div>
         <div class="header-actions">
@@ -130,14 +132,43 @@
         </div>
     </main>
 
-    <nav class="bottom-nav animate-fade-in" style="animation-delay: 0.2s;">
+    <!-- <nav class="bottom-nav animate-fade-in" style="animation-delay: 0.2s;">
         <a href="index.html"><i class="ph-fill ph-terminal-window"></i></a>
         <a href="#"><i class="ph ph-magnifying-glass"></i></a>
         <a href="index.html" class="nav-center-btn"><i class="ph-fill ph-plus"></i></a>
         <a href="#"><i class="ri-notification-3-line"></i></a>
         <a href="profile.html"><i class="ph ph-user"></i></a>
+    </nav> -->
+<div class="floating-dock-container">
+    <nav class="glass-pill">
+        <a href="index.html" class="nav-icon active">
+            <i class="ph-fill ph-terminal-window"></i>
+        </a>
+        
+        <a href="search.html" class="nav-icon">
+            <i class="ph ph-magnifying-glass"></i>
+        </a>
+        
+        <a href="#" class="nav-icon">
+            <div class="badge-dot"></div>
+            <i class="ph ph-bell"></i>
+        </a>
+        
+        <a href="profile.html" class="nav-icon">
+            <i class="ph ph-user"></i>
+        </a>
     </nav>
 
+    <!-- <button class="action-sphere" onclick="document.querySelector('.create-post textarea').focus();">
+        <i class="ph ph-plus"></i>
+    </button> -->
+    <button class="action-sphere" id="post-norm">
+    <i class="ph ph-plus"></i>
+</button>
+<!-- <button class="action-sphere" id="post-modal">
+    <i class="ph ph-plus"></i>
+</button> -->
+</div>
     <script type="module" src="gdrive.js"></script>
     <script type="module" src="pload.js"></script>
     <script type="module" src="user.js"></script>

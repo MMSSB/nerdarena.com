@@ -169,24 +169,1389 @@
 
 
 
-// post.js
-import { db, auth } from './firebase.js';
-import { doc, getDoc, updateDoc, deleteDoc, arrayUnion, arrayRemove, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+// // post.js
+// import { db, auth } from './firebase.js';
+// import { doc, getDoc, updateDoc, deleteDoc, arrayUnion, arrayRemove, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-// Cache for downloaded user profiles so we don't spam Firebase
+// // Cache for downloaded user profiles so we don't spam Firebase
+// export const userCache = {};
+
+// // ============================================================================
+// // PART 1: THE GLOBAL POST ENGINE (Exported for app.js, profile.js, user.js)
+// // ============================================================================
+
+// export function formatContent(text) {
+//     let safe = text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+//     safe = safe.replace(/```([\s\S]*?)```/g, '<div class="code-block"><pre><code>$1</code></pre></div>');
+//     safe = safe.replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>');
+//     safe = safe.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+//     const urlRegex = /(https?:\/\/[^\s]+)/g;
+//     safe = safe.replace(urlRegex, '<a href="$1" target="_blank" class="rich-link">$1</a>');
+//     return safe.replace(/\n/g, '<br>');
+// }
+
+// export function createPostHTML(post, postId, currentUserId) {
+//     const isLiked = post.likedBy && post.likedBy.includes(currentUserId);
+//     const isMyPost = post.authorId === currentUserId;
+//     const commentsList = post.comments || [];
+//     let commentsHTML = commentsList.map(c => `<div class="comment-item"><strong>${c.author}:</strong> ${c.text}</div>`).join('');
+
+//     const dropdownHTML = `
+//         <div class="post-options-container">
+//             <button class="btn-more toggle-menu-btn" data-id="${postId}"><i class="ri-more-fill"></i></button>
+//             <div class="post-dropdown-menu" id="menu-${postId}">
+//                 <a class="share-post-btn" data-id="${postId}"><i class="ri-share-forward-line"></i> Share Idea</a>
+//                 ${isMyPost 
+//                     ? `<a class="delete-post-btn text-danger" data-id="${postId}"><i class="ri-delete-bin-line"></i> Delete Post</a>`
+//                     : `<a class="report-post-btn" onclick="alert('Post reported to moderators.')"><i class="ri-flag-line"></i> Report Post</a>`
+//                 }
+//             </div>
+//         </div>
+//     `;
+
+//     return `
+//         <div class="card post animate-fade-in" data-author="${post.authorId}" data-postid="${postId}">
+//             <div class="post-header">
+//                 <div class="post-author" style="cursor:pointer;" onclick="window.location.href = '${isMyPost ? 'profile.html' : 'user.html?id=' + post.authorId}'">
+//                     <div class="avatar-text" id="dyn-avatar-${postId}"></div>
+//                     <div class="author-info">
+//                         <strong id="dyn-name-${postId}">Loading...</strong> 
+//                         <span class="badge badge-idea">${isMyPost ? '💡 My Pitch' : '💡 Dev'}</span>
+//                     </div>
+//                 </div>
+//                 ${dropdownHTML}
+//             </div>
+//             <div class="post-content"><p>${formatContent(post.content)}</p></div>
+//             <div class="post-footer">
+//                 <div class="likes ${isLiked ? '' : 'unliked'}" data-id="${postId}" data-liked="${isLiked}">
+//                     <i class="${isLiked ? 'ph-fill' : 'ph'} ph-rocket"></i> Upvote <span>${post.likedBy ? post.likedBy.length : 0}</span>
+//                 </div>
+//                 <div class="comments-shares toggle-comments-btn" data-id="${postId}">
+//                     <span><i class="ri-chat-3-line"></i> Discuss <span>${commentsList.length}</span></span>
+//                 </div>
+//             </div>
+            
+//             <div class="comments-section" id="comments-${postId}" style="display:none; margin-top:15px; border-top:1px dashed var(--border-color); padding-top:15px;">
+//                 <div class="comments-list">${commentsHTML}</div>
+//                 <div class="comment-input-wrapper" style="display:flex; gap:10px; margin-top:10px;">
+//                     <input type="text" id="comment-input-${postId}" placeholder="Suggest an idea..." style="flex:1; padding:8px 15px; border-radius:20px; border:1px solid var(--border-color);">
+//                     <button class="submit-comment-btn" data-id="${postId}" style="background:var(--primary-color); color:white; border-radius:20px; padding:0 20px; border:none; cursor:pointer;">Send</button>
+//                 </div>
+//             </div>
+//         </div>
+//     `;
+// }
+
+// export async function renderDynamicAuthor(authorId, postId) {
+//     const nameEl = document.getElementById(`dyn-name-${postId}`);
+//     const avatarEl = document.getElementById(`dyn-avatar-${postId}`);
+//     if (!nameEl || !avatarEl) return;
+
+//     let userData = null;
+    
+//     if (window.currentUserData && authorId === window.currentUserData.uid) {
+//         userData = window.currentUserData;
+//     } else if (userCache[authorId]) {
+//         userData = userCache[authorId];
+//     } else {
+//         const docSnap = await getDoc(doc(db, "users", authorId));
+//         if (docSnap.exists()) {
+//             userData = docSnap.data();
+//             userCache[authorId] = userData;
+//         }
+//     }
+
+//     if (userData) {
+//         nameEl.innerText = userData.fullname;
+//         if (userData.avatarClass && userData.avatarClass.includes('url(')) {
+//             avatarEl.style.background = userData.avatarClass;
+//             avatarEl.style.backgroundSize = 'cover';
+//             avatarEl.style.backgroundPosition = 'center';
+//             avatarEl.className = 'avatar-text';
+//             avatarEl.innerText = '';
+//         } else {
+//             avatarEl.className = `avatar-text ${userData.avatarClass || 'bg-primary'}`;
+//             avatarEl.style.background = '';
+//             avatarEl.innerText = userData.fullname.substring(0, 2).toUpperCase();
+//         }
+//     } else {
+//         nameEl.innerText = "Unknown Dev";
+//     }
+// }
+
+// export function initGlobalPostListeners() {
+//     if (window.postEngineListenersAttached) return;
+//     window.postEngineListenersAttached = true;
+
+//     document.addEventListener('click', async (e) => {
+//         // Dropdowns
+//         if (e.target.closest('.toggle-menu-btn')) {
+//             e.stopPropagation();
+//             const btn = e.target.closest('.toggle-menu-btn');
+//             const id = btn.getAttribute('data-id');
+//             const menu = document.getElementById(`menu-${id}`);
+//             document.querySelectorAll('.post-dropdown-menu').forEach(m => { if (m !== menu) m.classList.remove('show'); });
+//             menu.classList.toggle('show');
+//             return;
+//         }
+//         if (!e.target.closest('.post-options-container')) {
+//             document.querySelectorAll('.post-dropdown-menu').forEach(m => m.classList.remove('show'));
+//         }
+
+//         // Likes
+//         if (e.target.closest('.likes')) {
+//             const btn = e.target.closest('.likes');
+//             const id = btn.getAttribute('data-id');
+//             const isLiked = btn.getAttribute('data-liked') === 'true';
+            
+//             if (isLiked) await updateDoc(doc(db, "posts", id), { likedBy: arrayRemove(auth.currentUser.uid) });
+//             else await updateDoc(doc(db, "posts", id), { likedBy: arrayUnion(auth.currentUser.uid) });
+//             return;
+//         }
+
+//         // Toggle Comments
+//         if (e.target.closest('.toggle-comments-btn')) {
+//             const btn = e.target.closest('.toggle-comments-btn');
+//             const id = btn.getAttribute('data-id');
+//             const section = document.getElementById(`comments-${id}`);
+//             section.style.display = section.style.display === 'none' ? 'block' : 'none';
+//             return;
+//         }
+
+//         // Submit Comment
+//         if (e.target.closest('.submit-comment-btn')) {
+//             const btn = e.target.closest('.submit-comment-btn');
+//             const id = btn.getAttribute('data-id');
+//             const input = document.getElementById(`comment-input-${id}`);
+//             if(!input.value.trim()) return;
+
+//             btn.innerText = '...'; 
+//             await updateDoc(doc(db, "posts", id), { 
+//                 comments: arrayUnion({ author: window.currentUserData.fullname, text: input.value.trim(), uid: auth.currentUser.uid }) 
+//             });
+//             input.value = '';
+//             btn.innerText = 'Send';
+//             return;
+//         }
+
+//         // Share Post (FIXED URL)
+//         if (e.target.closest('.share-post-btn')) {
+//             e.stopPropagation();
+//             const btn = e.target.closest('.share-post-btn');
+//             const id = btn.getAttribute('data-id');
+//             const shareUrl = `${window.location.origin}/nerdarena.com/post.html?id=${id}`;
+            
+//             try {
+//                 if (navigator.share) {
+//                     await navigator.share({ title: 'Nerd Arena Pitch', url: shareUrl });
+//                 } else {
+//                     await navigator.clipboard.writeText(shareUrl); 
+//                     alert("Link copied to clipboard!"); 
+//                 }
+//             } catch (err) {}
+            
+//             document.querySelectorAll('.post-dropdown-menu').forEach(m => m.classList.remove('show'));
+//             return;
+//         }
+
+//         // Delete Post
+//         if (e.target.closest('.delete-post-btn')) {
+//             const btn = e.target.closest('.delete-post-btn');
+//             if(confirm("Are you sure you want to delete this pitch?")) {
+//                 await deleteDoc(doc(db, "posts", btn.getAttribute('data-id')));
+//                 if(window.location.pathname.includes('post.html')) window.location.href = "index.html";
+//             }
+//             return;
+//         }
+//     });
+// }
+
+// // ============================================================================
+// // PART 2: SINGLE POST PAGE LOGIC (Only runs if on post.html)
+// // ============================================================================
+
+// document.addEventListener('userDataLoaded', () => {
+//     const container = document.getElementById('single-post-container');
+    
+//     // IF WE ARE NOT ON POST.HTML, EXIT EARLY! 
+//     if (!container) return; 
+
+//     const urlParams = new URLSearchParams(window.location.search);
+//     const targetPostId = urlParams.get('id');
+
+//     if (!targetPostId) {
+//         container.innerHTML = "<p style='text-align:center;'>Invalid post link.</p>";
+//         return;
+//     }
+
+//     initGlobalPostListeners(); // Attach standard listeners
+    
+//     // Use onSnapshot to instantly update likes/comments without reloading
+//     onSnapshot(doc(db, "posts", targetPostId), (docSnap) => {
+//         if (!docSnap.exists()) {
+//             container.innerHTML = "<p style='text-align:center; color:var(--text-muted); padding:40px;'>This pitch was deleted or does not exist.</p>";
+//             return;
+//         }
+
+//         const post = docSnap.data();
+//         // Generate the HTML using the engine
+//         container.innerHTML = createPostHTML(post, targetPostId, auth.currentUser.uid);
+        
+//         // Resolve the author profile
+//         renderDynamicAuthor(post.authorId, targetPostId);
+        
+//         // Force comments section open on single post view
+//         const commentSection = document.getElementById(`comments-${targetPostId}`);
+//         if(commentSection) commentSection.style.display = 'block';
+//     });
+// });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// // post.js
+// import { db, auth } from './firebase.js';
+// import { doc, getDoc, updateDoc, deleteDoc, arrayUnion, arrayRemove, onSnapshot, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+// // Cache for downloaded user profiles
+// export const userCache = {};
+
+// // ============================================================================
+// // PART 1: THE GLOBAL POST ENGINE (Formatting & HTML Generation)
+// // ============================================================================
+
+// export function formatContent(text) {
+//     let safe = text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+//     safe = safe.replace(/```([\s\S]*?)```/g, '<div class="code-block"><pre><code>$1</code></pre></div>');
+//     safe = safe.replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>');
+//     safe = safe.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+//     const urlRegex = /(https?:\/\/[^\s]+)/g;
+//     safe = safe.replace(urlRegex, '<a href="$1" target="_blank" class="rich-link">$1</a>');
+//     return safe.replace(/\n/g, '<br>');
+// }
+
+// export function createPostHTML(post, postId, currentUserId) {
+//     const isLiked = post.likedBy && post.likedBy.includes(currentUserId);
+//     const isMyPost = post.authorId === currentUserId;
+//     const commentsList = post.comments || [];
+//     let commentsHTML = commentsList.map(c => `<div class="comment-item"><strong>${c.author}:</strong> ${c.text}</div>`).join('');
+
+//     const dropdownHTML = `
+//         <div class="post-options-container">
+//             <button class="btn-more toggle-menu-btn" data-id="${postId}"><i class="ri-more-fill"></i></button>
+//             <div class="post-dropdown-menu" id="menu-${postId}">
+//                 <a class="share-post-btn" data-id="${postId}"><i class="ri-share-forward-line"></i> Share Idea</a>
+//                 ${isMyPost 
+//                     ? `<a class="delete-post-btn text-danger" data-id="${postId}"><i class="ri-delete-bin-line"></i> Delete Post</a>`
+//                     : `<a class="report-post-btn" onclick="alert('Post reported to moderators.')"><i class="ri-flag-line"></i> Report Post</a>`
+//                 }
+//             </div>
+//         </div>
+//     `;
+
+//     return `
+//         <div class="card post animate-fade-in" data-author="${post.authorId}" data-postid="${postId}">
+//             <div class="post-header">
+//                 <div class="post-author" style="cursor:pointer;" onclick="window.location.href = '${isMyPost ? 'profile.html' : 'user.html?id=' + post.authorId}'">
+//                     <div class="avatar-text" id="dyn-avatar-${postId}"></div>
+//                     <div class="author-info">
+//                         <strong id="dyn-name-${postId}">Loading...</strong> 
+//                         <span class="badge badge-idea">${isMyPost ? '💡 My Pitch' : '💡 Dev'}</span>
+//                     </div>
+//                 </div>
+//                 ${dropdownHTML}
+//             </div>
+//             <div class="post-content"><p>${formatContent(post.content)}</p></div>
+//             <div class="post-footer">
+//                 <div class="likes ${isLiked ? '' : 'unliked'}" data-id="${postId}" data-liked="${isLiked}">
+//                     <i class="${isLiked ? 'ph-fill' : 'ph'} ph-rocket"></i> Upvote <span>${post.likedBy ? post.likedBy.length : 0}</span>
+//                 </div>
+//                 <div class="comments-shares toggle-comments-btn" data-id="${postId}">
+//                     <span><i class="ri-chat-3-line"></i> Discuss <span>${commentsList.length}</span></span>
+//                 </div>
+//             </div>
+            
+//             <div class="comments-section" id="comments-${postId}" style="display:none; margin-top:15px; border-top:1px dashed var(--border-color); padding-top:15px;">
+//                 <div class="comments-list">${commentsHTML}</div>
+//                 <div class="comment-input-wrapper" style="display:flex; gap:10px; margin-top:10px;">
+//                     <input type="text" id="comment-input-${postId}" placeholder="Suggest an idea..." style="flex:1; padding:8px 15px; border-radius:20px; border:1px solid var(--border-color);">
+//                     <button class="submit-comment-btn" data-id="${postId}" style="background:var(--primary-color); color:white; border-radius:20px; padding:0 20px; border:none; cursor:pointer;">Send</button>
+//                 </div>
+//             </div>
+//         </div>
+//     `;
+// }
+
+// export async function renderDynamicAuthor(authorId, postId) {
+//     const nameEl = document.getElementById(`dyn-name-${postId}`);
+//     const avatarEl = document.getElementById(`dyn-avatar-${postId}`);
+//     if (!nameEl || !avatarEl) return;
+
+//     let userData = null;
+    
+//     if (window.currentUserData && authorId === window.currentUserData.uid) {
+//         userData = window.currentUserData;
+//     } else if (userCache[authorId]) {
+//         userData = userCache[authorId];
+//     } else {
+//         const docSnap = await getDoc(doc(db, "users", authorId));
+//         if (docSnap.exists()) {
+//             userData = docSnap.data();
+//             userCache[authorId] = userData;
+//         }
+//     }
+
+//     if (userData) {
+//         nameEl.innerText = userData.fullname;
+//         if (userData.avatarClass && userData.avatarClass.includes('url(')) {
+//             avatarEl.style.background = userData.avatarClass;
+//             avatarEl.style.backgroundSize = 'cover';
+//             avatarEl.style.backgroundPosition = 'center';
+//             avatarEl.className = 'avatar-text';
+//             avatarEl.innerText = '';
+//         } else {
+//             avatarEl.className = `avatar-text ${userData.avatarClass || 'bg-primary'}`;
+//             avatarEl.style.background = '';
+//             avatarEl.innerText = userData.fullname.substring(0, 2).toUpperCase();
+//         }
+//     } else {
+//         nameEl.innerText = "Unknown Dev";
+//     }
+// }
+
+// // ============================================================================
+// // PART 2: THE MODAL SYSTEM (Injection & Drag Logic)
+// // ============================================================================
+
+// function injectModalHTML() {
+//     if(document.getElementById('global-post-modal')) return; // Prevent duplicates
+//     const modalHTML = `
+//     <div class="post-modal-overlay" id="global-post-modal">
+//         <div class="post-modal">
+//             <div class="modal-drag-handle"></div>
+//             <div class="post-modal-header">
+//                 <div class="avatar-text bg-primary modal-user-avatar">...</div>
+//                 <i class="ri-close-line close-post-modal" id="close-modal-btn"></i>
+//             </div>
+//             <textarea id="modal-post-textarea" placeholder="Post your idea, architecture, or project roadmap..."></textarea>
+//             <div class="post-actions" style="margin-top: auto;">
+//                 <div class="action-icons">
+//                     <span title="Add Code Snippet"><i class="ph ph-code-block"></i></span> 
+//                     <span title="Format Markdown"><i class="ph ph-text-b"></i></span> 
+//                 </div>
+//                 <button class="btn-post" id="modal-submit-post">Post Idea</button>
+//             </div>
+//         </div>
+//     </div>`;
+    
+//     document.body.insertAdjacentHTML('beforeend', modalHTML);
+//     setupModalDragLogic();
+// }
+
+// function openModal() {
+//     let overlay = document.getElementById('global-post-modal');
+//     if(!overlay) {
+//         injectModalHTML();
+//         overlay = document.getElementById('global-post-modal');
+//     }
+    
+//     overlay.classList.add('active');
+    
+//     if(window.currentUserData) {
+//         const avatar = overlay.querySelector('.modal-user-avatar');
+//         if (window.currentUserData.avatarClass?.includes('url(')) {
+//             avatar.style.background = window.currentUserData.avatarClass;
+//             avatar.style.backgroundSize = 'cover';
+//             avatar.innerText = '';
+//         } else {
+//             avatar.className = `avatar-text ${window.currentUserData.avatarClass || 'bg-primary'} modal-user-avatar`;
+//             avatar.innerText = window.currentUserData.fullname.substring(0,2).toUpperCase();
+//         }
+//     }
+    
+//     setTimeout(() => {
+//         document.getElementById('modal-post-textarea').focus();
+//     }, 300);
+// }
+
+// function closeModal() {
+//     const overlay = document.getElementById('global-post-modal');
+//     if(overlay) {
+//         overlay.classList.remove('active');
+//         overlay.querySelector('.post-modal').style.transform = ''; 
+//         document.getElementById('modal-post-textarea').value = ''; 
+//     }
+// }
+
+// function setupModalDragLogic() {
+//     const overlay = document.getElementById('global-post-modal');
+//     const modal = overlay.querySelector('.post-modal');
+//     const handle = overlay.querySelector('.modal-drag-handle');
+    
+//     let startY = 0, currentY = 0, isDragging = false;
+
+//     handle.addEventListener('touchstart', (e) => {
+//         startY = e.touches[0].clientY;
+//         isDragging = true;
+//         modal.classList.add('dragging');
+//     }, {passive: true});
+
+//     document.addEventListener('touchmove', (e) => {
+//         if (!isDragging) return;
+//         currentY = e.touches[0].clientY;
+//         const deltaY = currentY - startY;
+//         if (deltaY > 0) {
+//             e.preventDefault(); 
+//             modal.style.transform = `translateY(${deltaY}px)`;
+//         }
+//     }, { passive: false });
+
+//     document.addEventListener('touchend', (e) => {
+//         if (!isDragging) return;
+//         isDragging = false;
+//         modal.classList.remove('dragging');
+//         if (currentY - startY > 120) closeModal();
+//         else modal.style.transform = '';
+//     });
+// }
+
+// // ============================================================================
+// // PART 3: GLOBAL INTERACTION LISTENERS (Includes Modal & Pages)
+// // ============================================================================
+
+// export function initGlobalPostListeners() {
+//     if (window.postEngineListenersAttached) return;
+//     window.postEngineListenersAttached = true;
+
+//     // Inject modal so it's ready anywhere `initGlobalPostListeners()` is called
+//     injectModalHTML();
+
+//     document.addEventListener('click', async (e) => {
+        
+//         // --- 1. ROUTING: MODAL vs PAGE CREATION ---
+        
+//         if (e.target.closest('#post-modal')) {
+//             e.preventDefault();
+//             openModal();
+//             return;
+//         }
+        
+//         if (e.target.closest('#post-norm')) {
+//             e.preventDefault();
+//             window.location.href = 'create-post.html';
+//             return;
+//         }
+
+//         // --- 2. MODAL CONTROLS ---
+        
+//         if (e.target.id === 'close-modal-btn' || e.target.id === 'global-post-modal') {
+//             closeModal();
+//             return;
+//         }
+
+//         if (e.target.id === 'modal-submit-post') {
+//             const btnPost = e.target;
+//             const postTextarea = document.getElementById('modal-post-textarea');
+//             const content = postTextarea.value.trim();
+            
+//             if (!content || !window.currentUserData) return;
+            
+//             btnPost.disabled = true; 
+//             btnPost.innerText = "Posting...";
+            
+//             try {
+//                 await addDoc(collection(db, "posts"), {
+//                     authorId: window.currentUserData.uid,
+//                     content: content, 
+//                     likedBy: [], 
+//                     comments: [],
+//                     timestamp: new Date().toISOString()
+//                 });
+//                 closeModal(); // Closes seamlessly upon success
+//             } catch (error) { 
+//                 console.error(error); 
+//             } finally { 
+//                 btnPost.disabled = false; 
+//                 btnPost.innerText = "Post Idea"; 
+//             }
+//             return;
+//         }
+// // --- 4. MARKDOWN FORMATTING BUTTONS ---
+//         const actionIcon = e.target.closest('.action-icons span');
+//         if (actionIcon) {
+//             const title = actionIcon.getAttribute('title');
+            
+//             // Determine which textarea is currently active on the screen
+//             let textarea = document.getElementById('modal-post-textarea');
+            
+//             // If the modal isn't active, check for the standalone page textarea
+//             if (!textarea || !textarea.closest('.post-modal-overlay.active')) {
+//                 textarea = document.getElementById('standalone-post-textarea');
+//             }
+//             // Finally, fall back to the inline feed textarea if neither exist
+//             if (!textarea) {
+//                 textarea = document.querySelector('.create-post textarea');
+//             }
+
+//             if (!textarea) return;
+
+//             // Inject the Markdown
+//             if (title && title.includes("Code")) {
+//                 textarea.value += "\n```\n// Paste your code here\n```\n";
+//             }
+//             if (title && title.includes("Format")) {
+//                 textarea.value += "**Bold Text**";
+//             }
+            
+//             textarea.focus();
+//             return;
+//         }
+
+//         // --- 5. STANDALONE PAGE SUBMIT BUTTON ---
+//         if (e.target.id === 'standalone-submit-post') {
+//             const btnPost = e.target;
+//             const postTextarea = document.getElementById('standalone-post-textarea');
+//             const content = postTextarea.value.trim();
+            
+//             if (!content || !window.currentUserData) return;
+            
+//             btnPost.disabled = true; 
+//             btnPost.innerText = "Posting...";
+            
+//             try {
+//                 await addDoc(collection(db, "posts"), {
+//                     authorId: window.currentUserData.uid,
+//                     content: content, 
+//                     likedBy: [], 
+//                     comments: [],
+//                     timestamp: new Date().toISOString()
+//                 });
+//                 window.location.href = 'index.html'; // Send back to feed after posting
+//             } catch (error) { 
+//                 console.error(error); 
+//             } finally { 
+//                 btnPost.disabled = false; 
+//                 btnPost.innerText = "Post Idea"; 
+//             }
+//             return;
+//         }
+//         // --- 3. STANDARD FEED POST INTERACTIONS ---
+
+//         // Dropdowns
+//         if (e.target.closest('.toggle-menu-btn')) {
+//             e.stopPropagation();
+//             const btn = e.target.closest('.toggle-menu-btn');
+//             const id = btn.getAttribute('data-id');
+//             const menu = document.getElementById(`menu-${id}`);
+//             document.querySelectorAll('.post-dropdown-menu').forEach(m => { if (m !== menu) m.classList.remove('show'); });
+//             menu.classList.toggle('show');
+//             return;
+//         }
+//         if (!e.target.closest('.post-options-container')) {
+//             document.querySelectorAll('.post-dropdown-menu').forEach(m => m.classList.remove('show'));
+//         }
+
+//         // Likes
+//         if (e.target.closest('.likes')) {
+//             const btn = e.target.closest('.likes');
+//             const id = btn.getAttribute('data-id');
+//             const isLiked = btn.getAttribute('data-liked') === 'true';
+            
+//             if (isLiked) await updateDoc(doc(db, "posts", id), { likedBy: arrayRemove(auth.currentUser.uid) });
+//             else await updateDoc(doc(db, "posts", id), { likedBy: arrayUnion(auth.currentUser.uid) });
+//             return;
+//         }
+
+//         // Toggle Comments
+//         if (e.target.closest('.toggle-comments-btn')) {
+//             const btn = e.target.closest('.toggle-comments-btn');
+//             const id = btn.getAttribute('data-id');
+//             const section = document.getElementById(`comments-${id}`);
+//             section.style.display = section.style.display === 'none' ? 'block' : 'none';
+//             return;
+//         }
+
+//         // Submit Comment
+//         if (e.target.closest('.submit-comment-btn')) {
+//             const btn = e.target.closest('.submit-comment-btn');
+//             const id = btn.getAttribute('data-id');
+//             const input = document.getElementById(`comment-input-${id}`);
+//             if(!input.value.trim()) return;
+
+//             btn.innerText = '...'; 
+//             await updateDoc(doc(db, "posts", id), { 
+//                 comments: arrayUnion({ author: window.currentUserData.fullname, text: input.value.trim(), uid: auth.currentUser.uid }) 
+//             });
+//             input.value = '';
+//             btn.innerText = 'Send';
+//             return;
+//         }
+
+//         // Share Post
+//         if (e.target.closest('.share-post-btn')) {
+//             e.stopPropagation();
+//             const btn = e.target.closest('.share-post-btn');
+//             const id = btn.getAttribute('data-id');
+//             const shareUrl = `${window.location.origin}/nerdarena.com/post.html?id=${id}`;
+            
+//             try {
+//                 if (navigator.share) {
+//                     await navigator.share({ title: 'Nerd Arena Pitch', url: shareUrl });
+//                 } else {
+//                     await navigator.clipboard.writeText(shareUrl); 
+//                     alert("Link copied to clipboard!"); 
+//                 }
+//             } catch (err) {}
+            
+//             document.querySelectorAll('.post-dropdown-menu').forEach(m => m.classList.remove('show'));
+//             return;
+//         }
+
+//         // Delete Post
+//         if (e.target.closest('.delete-post-btn')) {
+//             const btn = e.target.closest('.delete-post-btn');
+//             if(confirm("Are you sure you want to delete this pitch?")) {
+//                 await deleteDoc(doc(db, "posts", btn.getAttribute('data-id')));
+//                 if(window.location.pathname.includes('post.html')) window.location.href = "index.html";
+//             }
+//             return;
+//         }
+//     });
+// }
+
+// // ============================================================================
+// // PART 4: SINGLE POST PAGE LOGIC (Runs automatically if on post.html)
+// // ============================================================================
+
+// document.addEventListener('userDataLoaded', () => {
+//     const container = document.getElementById('single-post-container');
+//     if (!container) return; 
+
+//     const urlParams = new URLSearchParams(window.location.search);
+//     const targetPostId = urlParams.get('id');
+
+//     if (!targetPostId) {
+//         container.innerHTML = "<p style='text-align:center;'>Invalid post link.</p>";
+//         return;
+//     }
+
+//     initGlobalPostListeners(); 
+    
+//     onSnapshot(doc(db, "posts", targetPostId), (docSnap) => {
+//         if (!docSnap.exists()) {
+//             container.innerHTML = "<p style='text-align:center; color:var(--text-muted); padding:40px;'>This pitch was deleted or does not exist.</p>";
+//             return;
+//         }
+
+//         const post = docSnap.data();
+//         container.innerHTML = createPostHTML(post, targetPostId, auth.currentUser.uid);
+//         renderDynamicAuthor(post.authorId, targetPostId);
+        
+//         const commentSection = document.getElementById(`comments-${targetPostId}`);
+//         if(commentSection) commentSection.style.display = 'block';
+//     });
+// });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// // post.js
+// import { db, auth } from './firebase.js';
+// import { doc, getDoc, updateDoc, deleteDoc, arrayUnion, arrayRemove, onSnapshot, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+// // Cache for downloaded user profiles
+// export const userCache = {};
+
+// // ============================================================================
+// // PART 1: THE GLOBAL POST ENGINE (Formatting & HTML Generation)
+// // ============================================================================
+
+// export function formatContent(text) {
+//     let safe = text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+//     safe = safe.replace(/```([\s\S]*?)```/g, '<div class="code-block"><pre><code>$1</code></pre></div>');
+//     safe = safe.replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>');
+//     safe = safe.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+//     const urlRegex = /(https?:\/\/[^\s]+)/g;
+//     safe = safe.replace(urlRegex, '<a href="$1" target="_blank" class="rich-link">$1</a>');
+//     return safe.replace(/\n/g, '<br>');
+// }
+
+// // Helper to format timestamps nicely
+// function formatTime(isoString) {
+//     if(!isoString) return '';
+//     const d = new Date(isoString);
+//     return d.toLocaleDateString() + ' at ' + d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+// }
+
+// // Helper to generate the Avatar HTML string
+// function getAvatarHTML(avatarClass, name) {
+//     if (avatarClass && avatarClass.includes('url(')) {
+//         return `<div class="avatar-text" style="background:${avatarClass}; background-size:cover; background-position:center; width: 35px; height: 35px; min-width: 35px;"></div>`;
+//     } else {
+//         return `<div class="avatar-text ${avatarClass || 'bg-primary'}" style="width: 35px; height: 35px; min-width: 35px; font-size: 0.8rem;">${name.substring(0, 2).toUpperCase()}</div>`;
+//     }
+// }
+
+// export function createPostHTML(post, postId, currentUserId) {
+//     const isLiked = post.likedBy && post.likedBy.includes(currentUserId);
+//     const isMyPost = post.authorId === currentUserId;
+//     const commentsList = post.comments || [];
+    
+//     // Build Comments HTML
+//     let commentsHTML = commentsList.map(c => {
+//         const isMyComment = c.uid === currentUserId;
+//         const timeStr = c.timestamp ? formatTime(c.timestamp) : 'Just now';
+//         const avatar = getAvatarHTML(c.avatarClass, c.author);
+//         const editedTag = c.edited ? '<span style="font-size: 0.7rem; color: var(--text-muted); margin-left: 5px;">(edited)</span>' : '';
+
+//         return `
+//         <div class="comment-item" style="display: flex; gap: 10px; margin-bottom: 15px; align-items: flex-start; background: transparent; padding: 0;">
+//             ${avatar}
+//             <div style="flex: 1;">
+//                 <div style="background: var(--bg-color); padding: 10px 15px; border-radius: 0 12px 12px 12px; border: 1px solid var(--border-color);">
+//                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+//                         <strong style="font-size: 0.9rem; color: var(--text-main);">${c.author}</strong>
+//                         <span style="font-size: 0.75rem; color: var(--text-muted);">${timeStr}</span>
+//                     </div>
+//                     <p style="margin: 0; font-size: 0.95rem; color: var(--text-main); line-height: 1.4;">
+//                         ${c.text.replace(/</g, "&lt;").replace(/>/g, "&gt;")} ${editedTag}
+//                     </p>
+//                 </div>
+//                 ${isMyComment ? `
+//                 <div style="margin-top: 6px; margin-left: 5px; font-size: 0.8rem; display: flex; gap: 15px; font-weight: 600;">
+//                     <span class="edit-comment-btn" data-postid="${postId}" data-commentid="${c.id}" data-text="${c.text.replace(/"/g, '&quot;')}" style="color: var(--text-muted); cursor: pointer; transition: 0.2s;">Edit</span>
+//                     <span class="delete-comment-btn" data-postid="${postId}" data-commentid="${c.id}" style="color: var(--text-muted); cursor: pointer; transition: 0.2s;">Delete</span>
+//                 </div>
+//                 ` : ''}
+//             </div>
+//         </div>`;
+//     }).join('');
+
+//     const dropdownHTML = `
+//         <div class="post-options-container">
+//             <button class="btn-more toggle-menu-btn" data-id="${postId}"><i class="ri-more-fill"></i></button>
+//             <div class="post-dropdown-menu" id="menu-${postId}">
+//                 <a class="share-post-btn" data-id="${postId}"><i class="ri-share-forward-line"></i> Share Idea</a>
+//                 ${isMyPost 
+//                     ? `<a class="delete-post-btn text-danger" data-id="${postId}"><i class="ri-delete-bin-line"></i> Delete Post</a>`
+//                     : `<a class="report-post-btn" onclick="alert('Post reported to moderators.')"><i class="ri-flag-line"></i> Report Post</a>`
+//                 }
+//             </div>
+//         </div>
+//     `;
+
+//     return `
+//         <div class="card post animate-fade-in" data-author="${post.authorId}" data-postid="${postId}">
+//             <div class="post-header">
+//                 <div class="post-author" style="cursor:pointer;" onclick="window.location.href = '${isMyPost ? 'profile.html' : 'user.html?id=' + post.authorId}'">
+//                     <div class="avatar-text" id="dyn-avatar-${postId}"></div>
+//                     <div class="author-info">
+//                         <strong id="dyn-name-${postId}">Loading...</strong> 
+//                         <span class="badge badge-idea">${isMyPost ? '💡 My Pitch' : '💡 Dev'}</span>
+//                     </div>
+//                 </div>
+//                 ${dropdownHTML}
+//             </div>
+//             <div class="post-content"><p>${formatContent(post.content)}</p></div>
+//             <div class="post-footer">
+//                 <div class="likes ${isLiked ? '' : 'unliked'}" data-id="${postId}" data-liked="${isLiked}">
+//                     <i class="${isLiked ? 'ph-fill' : 'ph'} ph-rocket"></i> Upvote <span>${post.likedBy ? post.likedBy.length : 0}</span>
+//                 </div>
+//                 <div class="comments-shares toggle-comments-btn" data-id="${postId}">
+//                     <span><i class="ri-chat-3-line"></i> Discuss <span>${commentsList.length}</span></span>
+//                 </div>
+//             </div>
+            
+//             <div class="comments-section" id="comments-${postId}" style="display:none; margin-top:15px; border-top:1px dashed var(--border-color); padding-top:15px;">
+//                 <div class="comments-list">${commentsHTML}</div>
+//                 <div class="comment-input-wrapper" style="display:flex; gap:10px; margin-top:15px; align-items: center;">
+//                     ${getAvatarHTML(window.currentUserData?.avatarClass, window.currentUserData?.fullname || 'U')}
+//                     <input type="text" id="comment-input-${postId}" placeholder="Write a comment..." style="flex:1; padding:10px 15px; border-radius:20px; border:1px solid var(--border-color); background: var(--bg-color); outline: none;">
+//                     <button class="submit-comment-btn" data-id="${postId}" style="background:var(--primary-color); color:white; border-radius:20px; padding:10px 20px; border:none; cursor:pointer; font-weight: 600;"><i class="ri-send-plane-fill"></i></button>
+//                 </div>
+//             </div>
+//         </div>
+//     `;
+// }
+
+// export async function renderDynamicAuthor(authorId, postId) {
+//     const nameEl = document.getElementById(`dyn-name-${postId}`);
+//     const avatarEl = document.getElementById(`dyn-avatar-${postId}`);
+//     if (!nameEl || !avatarEl) return;
+
+//     let userData = null;
+    
+//     if (window.currentUserData && authorId === window.currentUserData.uid) {
+//         userData = window.currentUserData;
+//     } else if (userCache[authorId]) {
+//         userData = userCache[authorId];
+//     } else {
+//         const docSnap = await getDoc(doc(db, "users", authorId));
+//         if (docSnap.exists()) {
+//             userData = docSnap.data();
+//             userCache[authorId] = userData;
+//         }
+//     }
+
+//     if (userData) {
+//         nameEl.innerText = userData.fullname;
+//         if (userData.avatarClass && userData.avatarClass.includes('url(')) {
+//             avatarEl.style.background = userData.avatarClass;
+//             avatarEl.style.backgroundSize = 'cover';
+//             avatarEl.style.backgroundPosition = 'center';
+//             avatarEl.className = 'avatar-text';
+//             avatarEl.innerText = '';
+//         } else {
+//             avatarEl.className = `avatar-text ${userData.avatarClass || 'bg-primary'}`;
+//             avatarEl.style.background = '';
+//             avatarEl.innerText = userData.fullname.substring(0, 2).toUpperCase();
+//         }
+//     } else {
+//         nameEl.innerText = "Unknown Dev";
+//     }
+// }
+
+// // ============================================================================
+// // PART 2: THE MODAL SYSTEM (Injection & Drag Logic)
+// // ============================================================================
+
+// function injectModalHTML() {
+//     if(document.getElementById('global-post-modal')) return; 
+//     const modalHTML = `
+//     <div class="post-modal-overlay" id="global-post-modal">
+//         <div class="post-modal">
+//             <div class="modal-drag-handle"></div>
+//             <div class="post-modal-header">
+//                 <div class="avatar-text bg-primary modal-user-avatar">...</div>
+//                 <i class="ri-close-line close-post-modal" id="close-modal-btn"></i>
+//             </div>
+//             <textarea id="modal-post-textarea" placeholder="Post your idea, architecture, or project roadmap..."></textarea>
+//             <div class="post-actions" style="margin-top: auto;">
+//                 <div class="action-icons">
+//                     <span title="Add Code Snippet" class="markdown-btn"><i class="ph ph-code-block"></i></span> 
+//                     <span title="Format Markdown" class="markdown-btn"><i class="ph ph-text-b"></i></span> 
+//                 </div>
+//                 <button class="btn-post" id="modal-submit-post">Post Idea</button>
+//             </div>
+//         </div>
+//     </div>`;
+    
+//     document.body.insertAdjacentHTML('beforeend', modalHTML);
+//     setupModalDragLogic();
+// }
+
+// function openModal() {
+//     let overlay = document.getElementById('global-post-modal');
+//     if(!overlay) {
+//         injectModalHTML();
+//         overlay = document.getElementById('global-post-modal');
+//     }
+    
+//     overlay.classList.add('active');
+    
+//     if(window.currentUserData) {
+//         const avatar = overlay.querySelector('.modal-user-avatar');
+//         if (window.currentUserData.avatarClass?.includes('url(')) {
+//             avatar.style.background = window.currentUserData.avatarClass;
+//             avatar.style.backgroundSize = 'cover';
+//             avatar.innerText = '';
+//         } else {
+//             avatar.className = `avatar-text ${window.currentUserData.avatarClass || 'bg-primary'} modal-user-avatar`;
+//             avatar.innerText = window.currentUserData.fullname.substring(0,2).toUpperCase();
+//         }
+//     }
+    
+//     setTimeout(() => {
+//         document.getElementById('modal-post-textarea').focus();
+//     }, 300);
+// }
+
+// function closeModal() {
+//     const overlay = document.getElementById('global-post-modal');
+//     if(overlay) {
+//         overlay.classList.remove('active');
+//         overlay.querySelector('.post-modal').style.transform = ''; 
+//         document.getElementById('modal-post-textarea').value = ''; 
+//     }
+// }
+
+// function setupModalDragLogic() {
+//     const overlay = document.getElementById('global-post-modal');
+//     const modal = overlay.querySelector('.post-modal');
+//     const handle = overlay.querySelector('.modal-drag-handle');
+    
+//     let startY = 0, currentY = 0, isDragging = false;
+
+//     handle.addEventListener('touchstart', (e) => {
+//         startY = e.touches[0].clientY;
+//         isDragging = true;
+//         modal.classList.add('dragging');
+//     }, {passive: true});
+
+//     document.addEventListener('touchmove', (e) => {
+//         if (!isDragging) return;
+//         currentY = e.touches[0].clientY;
+//         const deltaY = currentY - startY;
+//         if (deltaY > 0) {
+//             e.preventDefault(); 
+//             modal.style.transform = `translateY(${deltaY}px)`;
+//         }
+//     }, { passive: false });
+
+//     document.addEventListener('touchend', (e) => {
+//         if (!isDragging) return;
+//         isDragging = false;
+//         modal.classList.remove('dragging');
+//         if (currentY - startY > 120) closeModal();
+//         else modal.style.transform = '';
+//     });
+// }
+
+// // ============================================================================
+// // PART 3: GLOBAL INTERACTION LISTENERS (Includes Modal & Pages)
+// // ============================================================================
+
+// export function initGlobalPostListeners() {
+//     if (window.postEngineListenersAttached) return;
+//     window.postEngineListenersAttached = true;
+
+//     injectModalHTML();
+
+//     document.addEventListener('click', async (e) => {
+        
+//         // --- ROUTING: MODAL vs PAGE CREATION ---
+//         if (e.target.closest('#post-modal')) {
+//             e.preventDefault(); openModal(); return;
+//         }
+//         if (e.target.closest('#post-norm')) {
+//             e.preventDefault(); window.location.href = 'create-post.html'; return;
+//         }
+
+//         // --- MODAL CONTROLS ---
+//         if (e.target.id === 'close-modal-btn' || e.target.id === 'global-post-modal') {
+//             closeModal(); return;
+//         }
+
+//         if (e.target.id === 'modal-submit-post') {
+//             const btnPost = e.target;
+//             const postTextarea = document.getElementById('modal-post-textarea');
+//             const content = postTextarea.value.trim();
+//             if (!content || !window.currentUserData) return;
+            
+//             btnPost.disabled = true; btnPost.innerText = "Posting...";
+//             try {
+//                 await addDoc(collection(db, "posts"), {
+//                     authorId: window.currentUserData.uid,
+//                     content: content, likedBy: [], comments: [],
+//                     timestamp: new Date().toISOString()
+//                 });
+//                 closeModal(); 
+//             } catch (error) { console.error(error); } 
+//             finally { btnPost.disabled = false; btnPost.innerText = "Post Idea"; }
+//             return;
+//         }
+
+//         // --- MARKDOWN FORMATTING BUTTONS ---
+//         const actionIcon = e.target.closest('.markdown-btn');
+//         if (actionIcon) {
+//             const title = actionIcon.getAttribute('title');
+//             let textarea = document.getElementById('modal-post-textarea');
+//             if (!textarea || !textarea.closest('.post-modal-overlay.active')) {
+//                 textarea = document.getElementById('standalone-post-textarea');
+//             }
+//             if (!textarea) {
+//                 textarea = document.querySelector('.create-post textarea');
+//             }
+//             if (!textarea) return;
+
+//             let injection = '';
+//             if (title && title.includes("Code")) injection = "\n```\n// Paste your code here\n```\n";
+//             if (title && title.includes("Format")) injection = "**Bold Text**";
+            
+//             const start = textarea.selectionStart;
+//             const end = textarea.selectionEnd;
+//             const val = textarea.value;
+//             textarea.value = val.substring(0, start) + injection + val.substring(end);
+//             textarea.selectionStart = textarea.selectionEnd = start + injection.length;
+//             textarea.focus();
+//             textarea.dispatchEvent(new Event('input')); // Trigger input events if needed
+//             return;
+//         }
+
+//         // --- STANDALONE PAGE SUBMIT BUTTON ---
+//         if (e.target.id === 'standalone-submit-post') {
+//             const btnPost = e.target;
+//             const postTextarea = document.getElementById('standalone-post-textarea');
+//             const content = postTextarea.value.trim();
+//             if (!content || !window.currentUserData) return;
+            
+//             btnPost.disabled = true; btnPost.innerText = "Posting...";
+//             try {
+//                 await addDoc(collection(db, "posts"), {
+//                     authorId: window.currentUserData.uid,
+//                     content: content, likedBy: [], comments: [],
+//                     timestamp: new Date().toISOString()
+//                 });
+//                 window.location.href = 'index.html'; 
+//             } catch (error) { console.error(error); } 
+//             finally { btnPost.disabled = false; btnPost.innerText = "Post Idea"; }
+//             return;
+//         }
+
+//         // --- STANDARD FEED POST INTERACTIONS ---
+
+//         // Dropdowns
+//         if (e.target.closest('.toggle-menu-btn')) {
+//             e.stopPropagation();
+//             const btn = e.target.closest('.toggle-menu-btn');
+//             const id = btn.getAttribute('data-id');
+//             const menu = document.getElementById(`menu-${id}`);
+//             document.querySelectorAll('.post-dropdown-menu').forEach(m => { if (m !== menu) m.classList.remove('show'); });
+//             menu.classList.toggle('show');
+//             return;
+//         }
+//         if (!e.target.closest('.post-options-container')) {
+//             document.querySelectorAll('.post-dropdown-menu').forEach(m => m.classList.remove('show'));
+//         }
+
+//         // Likes
+//         if (e.target.closest('.likes')) {
+//             const btn = e.target.closest('.likes');
+//             const id = btn.getAttribute('data-id');
+//             const isLiked = btn.getAttribute('data-liked') === 'true';
+            
+//             if (isLiked) await updateDoc(doc(db, "posts", id), { likedBy: arrayRemove(auth.currentUser.uid) });
+//             else await updateDoc(doc(db, "posts", id), { likedBy: arrayUnion(auth.currentUser.uid) });
+//             return;
+//         }
+
+//         // Toggle Comments
+//         if (e.target.closest('.toggle-comments-btn')) {
+//             const btn = e.target.closest('.toggle-comments-btn');
+//             const id = btn.getAttribute('data-id');
+//             const section = document.getElementById(`comments-${id}`);
+//             section.style.display = section.style.display === 'none' ? 'block' : 'none';
+//             return;
+//         }
+
+//         // Delete Comment
+//         if (e.target.closest('.delete-comment-btn')) {
+//             const btn = e.target.closest('.delete-comment-btn');
+//             const postId = btn.getAttribute('data-postid');
+//             const commentId = btn.getAttribute('data-commentid');
+
+//             if(confirm("Are you sure you want to delete this comment?")) {
+//                 const postRef = doc(db, "posts", postId);
+//                 const postSnap = await getDoc(postRef);
+//                 if(postSnap.exists()) {
+//                     const postData = postSnap.data();
+//                     const updatedComments = postData.comments.filter(c => c.id !== commentId);
+//                     await updateDoc(postRef, { comments: updatedComments });
+//                 }
+//             }
+//             return;
+//         }
+
+//         // Edit Comment
+//         if (e.target.closest('.edit-comment-btn')) {
+//             const btn = e.target.closest('.edit-comment-btn');
+//             const postId = btn.getAttribute('data-postid');
+//             const commentId = btn.getAttribute('data-commentid');
+//             const oldText = btn.getAttribute('data-text');
+
+//             const newText = prompt("Edit your comment:", oldText);
+//             if(newText !== null && newText.trim() !== "" && newText.trim() !== oldText) {
+//                 const postRef = doc(db, "posts", postId);
+//                 const postSnap = await getDoc(postRef);
+//                 if(postSnap.exists()) {
+//                     const postData = postSnap.data();
+//                     const updatedComments = postData.comments.map(c => {
+//                         if(c.id === commentId) {
+//                             return { ...c, text: newText.trim(), edited: true };
+//                         }
+//                         return c;
+//                     });
+//                     await updateDoc(postRef, { comments: updatedComments });
+//                 }
+//             }
+//             return;
+//         }
+
+//         // Submit Comment
+//         if (e.target.closest('.submit-comment-btn')) {
+//             const btn = e.target.closest('.submit-comment-btn');
+//             const id = btn.getAttribute('data-id');
+//             const input = document.getElementById(`comment-input-${id}`);
+//             if(!input.value.trim()) return;
+
+//             btn.innerHTML = '<i class="ri-loader-4-line ri-spin"></i>'; 
+            
+//             const newComment = {
+//                 id: Date.now().toString() + Math.random().toString(36).substr(2, 5), // Generate unique ID
+//                 author: window.currentUserData.fullname,
+//                 text: input.value.trim(),
+//                 uid: auth.currentUser.uid,
+//                 avatarClass: window.currentUserData.avatarClass || '',
+//                 timestamp: new Date().toISOString()
+//             };
+
+//             await updateDoc(doc(db, "posts", id), { 
+//                 comments: arrayUnion(newComment) 
+//             });
+//             input.value = '';
+//             btn.innerHTML = '<i class="ri-send-plane-fill"></i>';
+//             return;
+//         }
+
+//         // Share Post
+//         if (e.target.closest('.share-post-btn')) {
+//             e.stopPropagation();
+//             const btn = e.target.closest('.share-post-btn');
+//             const id = btn.getAttribute('data-id');
+//             const shareUrl = `${window.location.origin}/post.html?id=${id}`;
+            
+//             try {
+//                 if (navigator.share) {
+//                     await navigator.share({ title: 'Nerd Arena Pitch', url: shareUrl });
+//                 } else {
+//                     await navigator.clipboard.writeText(shareUrl); 
+//                     alert("Link copied to clipboard!"); 
+//                 }
+//             } catch (err) {}
+            
+//             document.querySelectorAll('.post-dropdown-menu').forEach(m => m.classList.remove('show'));
+//             return;
+//         }
+
+//         // Delete Post
+//         if (e.target.closest('.delete-post-btn')) {
+//             const btn = e.target.closest('.delete-post-btn');
+//             if(confirm("Are you sure you want to delete this pitch?")) {
+//                 await deleteDoc(doc(db, "posts", btn.getAttribute('data-id')));
+//                 if(window.location.pathname.includes('post.html')) window.location.href = "index.html";
+//             }
+//             return;
+//         }
+//     });
+    
+//     // Allow submitting comment with Enter key
+//     document.addEventListener('keypress', (e) => {
+//         if (e.key === 'Enter' && e.target.id.startsWith('comment-input-')) {
+//             e.preventDefault();
+//             const postId = e.target.id.replace('comment-input-', '');
+//             document.querySelector(`.submit-comment-btn[data-id="${postId}"]`).click();
+//         }
+//     });
+// }
+
+// // ============================================================================
+// // PART 4: SINGLE POST PAGE LOGIC (Runs automatically if on post.html)
+// // ============================================================================
+
+// document.addEventListener('userDataLoaded', () => {
+//     const container = document.getElementById('single-post-container');
+//     if (!container) return; 
+
+//     const urlParams = new URLSearchParams(window.location.search);
+//     const targetPostId = urlParams.get('id');
+
+//     if (!targetPostId) {
+//         container.innerHTML = "<p style='text-align:center;'>Invalid post link.</p>";
+//         return;
+//     }
+
+//     initGlobalPostListeners(); 
+    
+//     onSnapshot(doc(db, "posts", targetPostId), (docSnap) => {
+//         if (!docSnap.exists()) {
+//             container.innerHTML = "<p style='text-align:center; color:var(--text-muted); padding:40px;'>This pitch was deleted or does not exist.</p>";
+//             return;
+//         }
+
+//         const post = docSnap.data();
+//         container.innerHTML = createPostHTML(post, targetPostId, auth.currentUser.uid);
+//         renderDynamicAuthor(post.authorId, targetPostId);
+        
+//         const commentSection = document.getElementById(`comments-${targetPostId}`);
+//         if(commentSection) commentSection.style.display = 'block';
+//     });
+// });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// post.js - Pure Javascript Social Engine with Modern UI
+import { db, auth } from './firebase.js';
+import { doc, getDoc, updateDoc, deleteDoc, arrayUnion, arrayRemove, onSnapshot, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+// Cache for downloaded user profiles to avoid repeated requests
 export const userCache = {};
 
 // ============================================================================
-// PART 1: THE GLOBAL POST ENGINE (Exported for app.js, profile.js, user.js)
+// PART 1: CUSTOM UI ALERTS, PROMPTS, AND TIME HELPERS
+// ============================================================================
+
+function formatDateTime(isoString) {
+    if (!isoString) return 'Just now';
+    const date = new Date(isoString);
+    const today = new Date();
+    const isToday = date.getDate() === today.getDate() && date.getMonth() === today.getMonth() && date.getFullYear() === today.getFullYear();
+    
+    const timeOptions = { hour: 'numeric', minute: '2-digit', hour12: true };
+    const timeStr = date.toLocaleTimeString(undefined, timeOptions);
+    
+    if (isToday) return `Today at ${timeStr}`;
+    return `${date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} at ${timeStr}`;
+}
+
+function showCustomConfirm(message, onConfirm) {
+    const overlay = document.createElement('div');
+    overlay.className = 'post-modal-overlay active';
+    overlay.style.zIndex = '999999';
+    overlay.innerHTML = `
+        <div class="post-modal" style="max-width: 400px; text-align: center; padding: 30px;">
+            <i class="ri-error-warning-line text-danger" style="font-size: 3rem; margin-bottom: 15px;"></i>
+            <h3 style="color: var(--text-main); margin-bottom: 10px;">Are you sure?</h3>
+            <p style="color: var(--text-muted); margin-bottom: 25px;">${message}</p>
+            <div style="display: flex; gap: 15px; justify-content: center;">
+                <button id="cancel-btn" style="flex: 1; padding: 12px; border-radius: 12px; background: transparent; border: 2px solid var(--border-color); color: var(--text-main); font-weight: 600; cursor: pointer;">Cancel</button>
+                <button id="confirm-btn" style="flex: 1; padding: 12px; border-radius: 12px; background: #dc2626; color: white; border: none; font-weight: 600; cursor: pointer;">Yes, Delete</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+
+    overlay.querySelector('#cancel-btn').onclick = () => overlay.remove();
+    overlay.querySelector('#confirm-btn').onclick = () => {
+        onConfirm();
+        overlay.remove();
+    };
+}
+
+function showCustomPrompt(message, defaultValue, onSave) {
+    const overlay = document.createElement('div');
+    overlay.className = 'post-modal-overlay active';
+    overlay.style.zIndex = '999999';
+    overlay.innerHTML = `
+        <div class="post-modal" style="max-width: 500px; padding: 25px;">
+            <h3 style="color: var(--text-main); margin-bottom: 15px;">${message}</h3>
+            <textarea id="prompt-input" style="width: 100%; min-height: 100px; padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-main); font-family: inherit; font-size: 1rem; resize: none; margin-bottom: 20px; outline: none;"></textarea>
+            <div style="display: flex; gap: 15px; justify-content: flex-end;">
+                <button id="cancel-btn" style="padding: 10px 20px; border-radius: 12px; background: transparent; border: 2px solid var(--border-color); color: var(--text-main); font-weight: 600; cursor: pointer;">Cancel</button>
+                <button id="save-btn" style="padding: 10px 20px; border-radius: 12px; background: var(--primary-color); color: white; border: none; font-weight: 600; cursor: pointer;">Save Changes</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+    
+    const input = overlay.querySelector('#prompt-input');
+    input.value = defaultValue;
+    input.focus();
+
+    overlay.querySelector('#cancel-btn').onclick = () => overlay.remove();
+    overlay.querySelector('#save-btn').onclick = () => {
+        onSave(input.value);
+        overlay.remove();
+    };
+}
+
+// ============================================================================
+// PART 2: THE GLOBAL POST ENGINE (Formatting & HTML Generation)
 // ============================================================================
 
 export function formatContent(text) {
+    if (!text) return "";
     let safe = text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
     safe = safe.replace(/```([\s\S]*?)```/g, '<div class="code-block"><pre><code>$1</code></pre></div>');
     safe = safe.replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>');
     safe = safe.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    
     const urlRegex = /(https?:\/\/[^\s]+)/g;
-    safe = safe.replace(urlRegex, '<a href="$1" target="_blank" class="rich-link">$1</a>');
+    safe = safe.replace(urlRegex, (url) => {
+        try {
+            const domain = new URL(url).hostname;
+            return `
+            <a href="${url}" target="_blank" class="rich-link-card" style="display: flex; align-items: center; gap: 15px; padding: 12px; margin: 15px 0; border: 1px solid var(--border-color); border-radius: 12px; background: var(--bg-color); text-decoration: none; transition: 0.2s;">
+                <div style="width: 45px; height: 45px; border-radius: 10px; background: white; display: flex; justify-content: center; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); flex-shrink: 0;">
+                    <img src="https://s2.googleusercontent.com/s2/favicons?domain=${domain}&sz=64" alt="icon" style="width: 24px; height: 24px;">
+                </div>
+                <div style="display: flex; flex-direction: column; overflow: hidden;">
+                    <strong style="font-size: 1rem; color: var(--text-main); white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">${domain}</strong>
+                    <span style="font-size: 0.85rem; color: var(--primary-color); white-space: nowrap; text-overflow: ellipsis; overflow: hidden; margin-top: 2px;">View Website <i class="ri-arrow-right-up-line"></i></span>
+                </div>
+            </a>`;
+        } catch(e) { return `<a href="${url}" target="_blank" class="rich-link">${url}</a>`; }
+    });
     return safe.replace(/\n/g, '<br>');
 }
 
@@ -194,16 +1559,20 @@ export function createPostHTML(post, postId, currentUserId) {
     const isLiked = post.likedBy && post.likedBy.includes(currentUserId);
     const isMyPost = post.authorId === currentUserId;
     const commentsList = post.comments || [];
-    let commentsHTML = commentsList.map(c => `<div class="comment-item"><strong>${c.author}:</strong> ${c.text}</div>`).join('');
+    const timeStr = formatDateTime(post.timestamp);
+    const editedTag = post.edited ? '<span style="font-size: 0.75rem; color: var(--text-muted);">(edited)</span>' : '';
+    
+    let commentsHTML = commentsList.map(c => createCommentHTML(c, postId, currentUserId)).join('');
 
     const dropdownHTML = `
         <div class="post-options-container">
             <button class="btn-more toggle-menu-btn" data-id="${postId}"><i class="ri-more-fill"></i></button>
             <div class="post-dropdown-menu" id="menu-${postId}">
-                <a class="share-post-btn" data-id="${postId}"><i class="ri-share-forward-line"></i> Share Idea</a>
-                ${isMyPost 
-                    ? `<a class="delete-post-btn text-danger" data-id="${postId}"><i class="ri-delete-bin-line"></i> Delete Post</a>`
-                    : `<a class="report-post-btn" onclick="alert('Post reported to moderators.')"><i class="ri-flag-line"></i> Report Post</a>`
+                <a class="share-post-btn" data-id="${postId}"><i class="ri-share-forward-line"></i> Share</a>
+                ${isMyPost ? `
+                    <a class="edit-post-btn" data-id="${postId}"><i class="ri-edit-line"></i> Edit Post</a>
+                    <a class="delete-post-btn text-danger" data-id="${postId}"><i class="ri-delete-bin-line"></i> Delete Post</a>`
+                : `<a class="report-post-btn" onclick="alert('Post reported.')"><i class="ri-flag-line"></i> Report</a>`
                 }
             </div>
         </div>
@@ -213,10 +1582,15 @@ export function createPostHTML(post, postId, currentUserId) {
         <div class="card post animate-fade-in" data-author="${post.authorId}" data-postid="${postId}">
             <div class="post-header">
                 <div class="post-author" style="cursor:pointer;" onclick="window.location.href = '${isMyPost ? 'profile.html' : 'user.html?id=' + post.authorId}'">
-                    <div class="avatar-text" id="dyn-avatar-${postId}"></div>
+                    <div class="avatar-text pload-item" id="dyn-avatar-${postId}"></div>
                     <div class="author-info">
-                        <strong id="dyn-name-${postId}">Loading...</strong> 
-                        <span class="badge badge-idea">${isMyPost ? '💡 My Pitch' : '💡 Dev'}</span>
+                        <div>
+                            <strong class="pload-item" id="dyn-name-${postId}" style="display:inline-block; min-width: 100px;">Loading...</strong> 
+                            <span class="badge badge-idea">${isMyPost ? '💡 My Pitch' : '💡 Dev'}</span>
+                        </div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">
+                            ${timeStr} ${editedTag}
+                        </div>
                     </div>
                 </div>
                 ${dropdownHTML}
@@ -234,174 +1608,464 @@ export function createPostHTML(post, postId, currentUserId) {
             <div class="comments-section" id="comments-${postId}" style="display:none; margin-top:15px; border-top:1px dashed var(--border-color); padding-top:15px;">
                 <div class="comments-list">${commentsHTML}</div>
                 <div class="comment-input-wrapper" style="display:flex; gap:10px; margin-top:10px;">
-                    <input type="text" id="comment-input-${postId}" placeholder="Suggest an idea..." style="flex:1; padding:8px 15px; border-radius:20px; border:1px solid var(--border-color);">
-                    <button class="submit-comment-btn" data-id="${postId}" style="background:var(--primary-color); color:white; border-radius:20px; padding:0 20px; border:none; cursor:pointer;">Send</button>
+                    <div class="avatar-text my-avatar pload-item" style="width: 35px; height: 35px; min-width: 35px; font-size: 0.8rem;"></div>
+                    <input type="text" id="comment-input-${postId}" placeholder="Suggest an idea..." style="flex:1; padding:10px 15px; border-radius:20px; border:1px solid var(--border-color);">
+                    <button class="submit-comment-btn" data-id="${postId}" style="background:var(--primary-color); color:white; border-radius:20px; padding:0 15px; border:none; cursor:pointer;"><i class="ri-send-plane-fill"></i></button>
                 </div>
             </div>
         </div>
     `;
 }
 
-export async function renderDynamicAuthor(authorId, postId) {
-    const nameEl = document.getElementById(`dyn-name-${postId}`);
-    const avatarEl = document.getElementById(`dyn-avatar-${postId}`);
+function createCommentHTML(c, postId, currentUserId) {
+    const isMyComment = c.uid === currentUserId;
+    const editedTag = c.edited ? '<span style="font-size: 0.7rem; color: var(--text-muted); margin-left: 5px;">(edited)</span>' : '';
+    const timeStr = formatDateTime(c.timestamp);
+    const commId = c.id || 'old_' + Math.random().toString(36).substr(2, 5);
+    const authorId = c.authorId || c.uid || '';
+
+    return `
+        <div class="comment-item modern-bubble" style="display: flex; gap: 10px; margin-bottom: 15px; align-items: start;">
+            <div class="avatar-text comment-avatar pload-item" id="dyn-avatar-comm-${commId}" style="width: 35px; height: 35px; min-width: 35px;"></div>
+            <div style="flex: 1;">
+                <div style="background: var(--bg-color); padding: 10px 15px; border-radius: 0 12px 12px 12px; border: 1px solid var(--border-color);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                        <strong class="pload-item dyn-comment-name" data-authorid="${authorId}" data-commid="${commId}" id="dyn-name-comm-${commId}" style="font-size: 0.9rem; color: var(--text-main); display: inline-block; min-width: 80px;">Loading...</strong>
+                        <span style="font-size: 0.75rem; color: var(--text-muted);">${timeStr}</span>
+                    </div>
+                    <p id="comment-text-${commId}" style="margin: 0; font-size: 0.95rem; color: var(--text-main); line-height: 1.4;">${c.text.replace(/</g, "&lt;").replace(/>/g, "&gt;")} ${editedTag}</p>
+                </div>
+                ${isMyComment ? `
+                <div style="margin-top: 6px; margin-left: 5px; font-size: 0.8rem; display: flex; gap: 12px; font-weight: 600;">
+                    <span class="edit-comment-btn" data-postid="${postId}" data-commentid="${commId}" style="color: var(--text-muted); cursor: pointer; transition: 0.2s;">Edit</span>
+                    <span class="delete-comment-btn" data-postid="${postId}" data-commentid="${commId}" style="color: var(--text-muted); cursor: pointer; transition: 0.2s;">Delete</span>
+                </div>
+                ` : ''}
+            </div>
+        </div>`;
+}
+
+export async function renderDynamicAuthor(authorId, postId, commId = null) {
+    const target = commId ? `comm-${commId}` : postId;
+    const nameEl = document.getElementById(`dyn-name-${target}`);
+    const avatarEl = document.getElementById(`dyn-avatar-${target}`);
+    
+    if (!commId) {
+        setTimeout(() => {
+            const postCard = document.querySelector(`.card.post[data-postid="${postId}"]`);
+            if (postCard) {
+                const commentNames = postCard.querySelectorAll('.dyn-comment-name');
+                commentNames.forEach(el => {
+                    const cAuthorId = el.getAttribute('data-authorid');
+                    const cId = el.getAttribute('data-commid');
+                    if (cAuthorId && cId) renderDynamicAuthor(cAuthorId, postId, cId); 
+                });
+            }
+        }, 50);
+    }
+
     if (!nameEl || !avatarEl) return;
+    if (!authorId) {
+        nameEl.innerText = "Unknown Dev"; nameEl.classList.remove('pload-item');
+        avatarEl.className = 'avatar-text bg-primary'; avatarEl.style.background = '';
+        avatarEl.innerText = '?'; avatarEl.classList.remove('pload-item');
+        return;
+    }
 
     let userData = null;
-    
     if (window.currentUserData && authorId === window.currentUserData.uid) {
         userData = window.currentUserData;
+        document.querySelectorAll('.my-avatar').forEach(el => {
+            if (userData.avatarClass?.includes('url(')) {
+                el.style.background = userData.avatarClass; el.style.backgroundSize = 'cover'; el.innerText = '';
+            } else {
+                el.className = `avatar-text my-avatar ${userData.avatarClass || 'bg-primary'}`;
+                el.innerText = userData.fullname.substring(0, 2).toUpperCase();
+            }
+            el.classList.remove('pload-item');
+        });
     } else if (userCache[authorId]) {
         userData = userCache[authorId];
     } else {
-        const docSnap = await getDoc(doc(db, "users", authorId));
-        if (docSnap.exists()) {
-            userData = docSnap.data();
-            userCache[authorId] = userData;
-        }
+        try {
+            const docSnap = await getDoc(doc(db, "users", authorId));
+            if (docSnap.exists()) { userData = docSnap.data(); userCache[authorId] = userData; }
+        } catch(e) {}
     }
 
     if (userData) {
-        nameEl.innerText = userData.fullname;
+        nameEl.innerText = userData.fullname || 'Dev User'; nameEl.classList.remove('pload-item');
         if (userData.avatarClass && userData.avatarClass.includes('url(')) {
-            avatarEl.style.background = userData.avatarClass;
-            avatarEl.style.backgroundSize = 'cover';
-            avatarEl.style.backgroundPosition = 'center';
-            avatarEl.className = 'avatar-text';
-            avatarEl.innerText = '';
+            avatarEl.style.background = userData.avatarClass; avatarEl.style.backgroundSize = 'cover';
+            avatarEl.style.backgroundPosition = 'center'; avatarEl.innerText = '';
         } else {
-            avatarEl.className = `avatar-text ${userData.avatarClass || 'bg-primary'}`;
-            avatarEl.style.background = '';
-            avatarEl.innerText = userData.fullname.substring(0, 2).toUpperCase();
+            avatarEl.className = `avatar-text ${userData.avatarClass || 'bg-primary'}`; avatarEl.style.background = '';
+            avatarEl.innerText = (userData.fullname || 'U').substring(0, 2).toUpperCase();
         }
+        avatarEl.classList.remove('pload-item');
     } else {
-        nameEl.innerText = "Unknown Dev";
+        nameEl.innerText = "Deleted User"; nameEl.classList.remove('pload-item');
+        avatarEl.className = 'avatar-text bg-primary'; avatarEl.style.background = '';
+        avatarEl.innerText = 'U'; avatarEl.classList.remove('pload-item');
     }
 }
+
+// ============================================================================
+// PART 3: THE MODAL SYSTEM
+// ============================================================================
+
+function injectModalHTML() {
+    if(document.getElementById('global-post-modal')) return; 
+    const modalHTML = `
+    <div class="post-modal-overlay" id="global-post-modal">
+        <div class="post-modal">
+            <div class="modal-drag-handle"></div>
+            <div class="post-modal-header">
+                <div class="avatar-text bg-primary modal-user-avatar">...</div>
+                <i class="ri-close-line close-post-modal" id="close-modal-btn"></i>
+            </div>
+            <textarea id="modal-post-textarea" placeholder="Post your idea, architecture, or project roadmap..."></textarea>
+            <div class="post-actions" style="margin-top: auto;">
+                <div class="action-icons">
+                    <span title="Add Code Snippet" class="markdown-btn"><i class="ph ph-code-block"></i></span> 
+                    <span title="Format Markdown" class="markdown-btn"><i class="ph ph-text-b"></i></span> 
+                </div>
+                <button class="btn-post" id="modal-submit-post">Post Idea</button>
+            </div>
+        </div>
+    </div>`;
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    setupModalDragLogic();
+}
+
+function openModal() {
+    let overlay = document.getElementById('global-post-modal');
+    if(!overlay) { injectModalHTML(); overlay = document.getElementById('global-post-modal'); }
+    overlay.classList.add('active');
+    
+    if(window.currentUserData) {
+        const avatar = overlay.querySelector('.modal-user-avatar');
+        if (window.currentUserData.avatarClass?.includes('url(')) {
+            avatar.style.background = window.currentUserData.avatarClass;
+            avatar.style.backgroundSize = 'cover'; avatar.innerText = '';
+        } else {
+            avatar.className = `avatar-text ${window.currentUserData.avatarClass || 'bg-primary'} modal-user-avatar`;
+            avatar.innerText = window.currentUserData.fullname.substring(0,2).toUpperCase();
+        }
+    }
+    setTimeout(() => document.getElementById('modal-post-textarea').focus(), 300);
+}
+
+function closeModal() {
+    const overlay = document.getElementById('global-post-modal');
+    if(overlay) {
+        overlay.classList.remove('active');
+        overlay.querySelector('.post-modal').style.transform = ''; 
+        document.getElementById('modal-post-textarea').value = ''; 
+    }
+}
+
+function setupModalDragLogic() {
+    const overlay = document.getElementById('global-post-modal');
+    const modal = overlay.querySelector('.post-modal');
+    const handle = overlay.querySelector('.modal-drag-handle');
+    let startY = 0, currentY = 0, isDragging = false;
+
+    handle.addEventListener('touchstart', (e) => { startY = e.touches[0].clientY; isDragging = true; modal.classList.add('dragging'); }, {passive: true});
+    document.addEventListener('touchmove', (e) => {
+        if (!isDragging) return; currentY = e.touches[0].clientY;
+        const deltaY = currentY - startY;
+        if (deltaY > 0) { e.preventDefault(); modal.style.transform = `translateY(${deltaY}px)`; }
+    }, { passive: false });
+    document.addEventListener('touchend', (e) => {
+        if (!isDragging) return; isDragging = false; modal.classList.remove('dragging');
+        if (currentY - startY > 120) closeModal(); else modal.style.transform = '';
+    });
+}
+
+// ============================================================================
+// PART 4: GLOBAL INTERACTION LISTENERS 
+// ============================================================================
 
 export function initGlobalPostListeners() {
     if (window.postEngineListenersAttached) return;
     window.postEngineListenersAttached = true;
+    injectModalHTML();
 
     document.addEventListener('click', async (e) => {
-        // Dropdowns
-        if (e.target.closest('.toggle-menu-btn')) {
+        const t = e.target;
+
+        // Routing
+        if (t.closest('#post-modal')) { e.preventDefault(); openModal(); return; }
+        if (t.closest('#post-norm')) { e.preventDefault(); window.location.href = 'create-post.html'; return; }
+
+        // Modal Controls
+        if (t.id === 'close-modal-btn' || t.id === 'global-post-modal') { closeModal(); return; }
+
+        // Modal Submit
+        if (t.id === 'modal-submit-post') {
+            const btnPost = t;
+            const postTextarea = document.getElementById('modal-post-textarea');
+            const content = postTextarea.value.trim();
+            if (!content || !window.currentUserData) return;
+            
+            btnPost.disabled = true; btnPost.innerText = "Posting...";
+            try {
+                await addDoc(collection(db, "posts"), {
+                    authorId: window.currentUserData.uid,
+                    content: content, likedBy: [], comments: [],
+                    timestamp: new Date().toISOString()
+                });
+                closeModal(); 
+            } catch (error) {} finally { btnPost.disabled = false; btnPost.innerText = "Post Idea"; }
+            return;
+        }
+
+        // Markdown Buttons
+        const actionIcon = t.closest('.markdown-btn');
+        if (actionIcon) {
+            const title = actionIcon.getAttribute('title');
+            let textarea = document.getElementById('modal-post-textarea');
+            if (!textarea || !textarea.closest('.post-modal-overlay.active')) textarea = document.getElementById('standalone-post-textarea');
+            if (!textarea) textarea = document.querySelector('.create-post textarea');
+            if (!textarea) return;
+
+            let injection = '';
+            if (title && title.includes("Code")) injection = "\n```\n// Paste your code here\n```\n";
+            if (title && title.includes("Format")) injection = "**Bold Text**";
+            
+            const start = textarea.selectionStart; const end = textarea.selectionEnd; const val = textarea.value;
+            textarea.value = val.substring(0, start) + injection + val.substring(end);
+            textarea.selectionStart = textarea.selectionEnd = start + injection.length;
+            textarea.focus(); textarea.dispatchEvent(new Event('input'));
+            return;
+        }
+
+        // --- STANDALONE PAGE SUBMIT BUTTON (Handles Create AND Edit) ---
+        if (t.id === 'standalone-submit-post') {
+            const btnPost = t;
+            const postTextarea = document.getElementById('standalone-post-textarea');
+            const content = postTextarea.value.trim();
+            const editId = btnPost.getAttribute('data-edit-id'); // Checks if we are editing
+            
+            if (!content || !window.currentUserData) return;
+            
+            btnPost.disabled = true; btnPost.innerText = editId ? "Saving..." : "Posting...";
+            try {
+                if (editId) {
+                    await updateDoc(doc(db, "posts", editId), {
+                        content: content, edited: true, lastEdited: new Date().toISOString()
+                    });
+                } else {
+                    await addDoc(collection(db, "posts"), {
+                        authorId: window.currentUserData.uid, content: content, likedBy: [], comments: [], timestamp: new Date().toISOString()
+                    });
+                }
+                window.location.href = 'index.html'; 
+            } catch (error) {} finally { btnPost.disabled = false; btnPost.innerText = editId ? "Save Changes" : "Post Idea"; }
+            return;
+        }
+
+        // 3-Dots Dropdown
+        if (t.closest('.toggle-menu-btn')) {
             e.stopPropagation();
-            const btn = e.target.closest('.toggle-menu-btn');
-            const id = btn.getAttribute('data-id');
+            const id = t.closest('.toggle-menu-btn').getAttribute('data-id');
             const menu = document.getElementById(`menu-${id}`);
-            document.querySelectorAll('.post-dropdown-menu').forEach(m => { if (m !== menu) m.classList.remove('show'); });
+            document.querySelectorAll('.post-dropdown-menu').forEach(m => m !== menu && m.classList.remove('show'));
             menu.classList.toggle('show');
             return;
         }
-        if (!e.target.closest('.post-options-container')) {
-            document.querySelectorAll('.post-dropdown-menu').forEach(m => m.classList.remove('show'));
-        }
+        if (!t.closest('.post-options-container')) document.querySelectorAll('.post-dropdown-menu').forEach(m => m.classList.remove('show'));
 
         // Likes
-        if (e.target.closest('.likes')) {
-            const btn = e.target.closest('.likes');
+        if (t.closest('.likes')) {
+            const btn = t.closest('.likes');
             const id = btn.getAttribute('data-id');
             const isLiked = btn.getAttribute('data-liked') === 'true';
+            const span = btn.querySelector('span');
+            let newCount = parseInt(span.innerText);
             
-            if (isLiked) await updateDoc(doc(db, "posts", id), { likedBy: arrayRemove(auth.currentUser.uid) });
-            else await updateDoc(doc(db, "posts", id), { likedBy: arrayUnion(auth.currentUser.uid) });
+            if(isLiked) {
+                btn.classList.add('unliked'); btn.setAttribute('data-liked', 'false');
+                btn.querySelector('i').className = 'ph ph-rocket'; newCount = Math.max(0, newCount - 1);
+            } else {
+                btn.classList.remove('unliked'); btn.setAttribute('data-liked', 'true');
+                btn.querySelector('i').className = 'ph-fill ph-rocket'; newCount++;
+            }
+            span.innerText = newCount;
+
+            try {
+                if (isLiked) await updateDoc(doc(db, "posts", id), { likedBy: arrayRemove(auth.currentUser.uid) });
+                else await updateDoc(doc(db, "posts", id), { likedBy: arrayUnion(auth.currentUser.uid) });
+            } catch(e) {}
             return;
         }
 
         // Toggle Comments
-        if (e.target.closest('.toggle-comments-btn')) {
-            const btn = e.target.closest('.toggle-comments-btn');
-            const id = btn.getAttribute('data-id');
+        if (t.closest('.toggle-comments-btn')) {
+            const id = t.closest('.toggle-comments-btn').getAttribute('data-id');
             const section = document.getElementById(`comments-${id}`);
-            section.style.display = section.style.display === 'none' ? 'block' : 'none';
+            if(section) section.style.display = section.style.display === 'none' ? 'block' : 'none';
             return;
         }
 
         // Submit Comment
-        if (e.target.closest('.submit-comment-btn')) {
-            const btn = e.target.closest('.submit-comment-btn');
+        if (t.closest('.submit-comment-btn')) {
+            const btn = t.closest('.submit-comment-btn');
             const id = btn.getAttribute('data-id');
             const input = document.getElementById(`comment-input-${id}`);
-            if(!input.value.trim()) return;
+            const text = input.value.trim();
+            if(!text || !auth.currentUser) return;
 
-            btn.innerText = '...'; 
+            btn.innerHTML = '<i class="ri-loader-4-line ri-spin"></i>'; 
+            const newCommId = Date.now().toString() + Math.random().toString(36).substr(2, 5);
             await updateDoc(doc(db, "posts", id), { 
-                comments: arrayUnion({ author: window.currentUserData.fullname, text: input.value.trim(), uid: auth.currentUser.uid }) 
+                comments: arrayUnion({ id: newCommId, authorId: auth.currentUser.uid, text: text, uid: auth.currentUser.uid, timestamp: new Date().toISOString() }) 
             });
-            input.value = '';
-            btn.innerText = 'Send';
+            input.value = ''; btn.innerHTML = '<i class="ri-send-plane-fill"></i>';
             return;
         }
 
-        // Share Post (FIXED URL)
-        if (e.target.closest('.share-post-btn')) {
-            e.stopPropagation();
-            const btn = e.target.closest('.share-post-btn');
-            const id = btn.getAttribute('data-id');
-            const shareUrl = `${window.location.origin}/nerdarena.com/post.html?id=${id}`;
-            
-            try {
-                if (navigator.share) {
-                    await navigator.share({ title: 'Nerd Arena Pitch', url: shareUrl });
-                } else {
-                    await navigator.clipboard.writeText(shareUrl); 
-                    alert("Link copied to clipboard!"); 
+        // Edit Comment
+        if (t.closest('.edit-comment-btn')) {
+            const btn = t.closest('.edit-comment-btn');
+            const postId = btn.getAttribute('data-postid');
+            const commentId = btn.getAttribute('data-commentid');
+            const textEl = document.getElementById(`comment-text-${commentId}`);
+            if(!textEl) return;
+
+            const cleanText = textEl.innerText.replace('(edited)', '').trim();
+            showCustomPrompt("Edit your comment:", cleanText, async (newText) => {
+                if (newText.trim() !== "" && newText.trim() !== cleanText) {
+                    textEl.innerText = "Updating...";
+                    const postRef = doc(db, "posts", postId);
+                    const postSnap = await getDoc(postRef);
+                    if(postSnap.exists()) {
+                        const postData = postSnap.data();
+                        const updatedComments = postData.comments.map(c => 
+                            c.id === commentId ? { ...c, text: newText.trim(), edited: true } : c
+                        );
+                        await updateDoc(postRef, { comments: updatedComments });
+                    }
                 }
-            } catch (err) {}
-            
-            document.querySelectorAll('.post-dropdown-menu').forEach(m => m.classList.remove('show'));
+            });
+            return;
+        }
+
+        // Delete Comment
+        if (t.closest('.delete-comment-btn')) {
+            const btn = t.closest('.delete-comment-btn');
+            const postId = btn.getAttribute('data-postid');
+            const commentId = btn.getAttribute('data-commentid');
+
+            showCustomConfirm("This comment will be permanently deleted.", async () => {
+                const commentEl = t.closest('.comment-item');
+                if(commentEl) { commentEl.style.opacity = '0.5'; commentEl.style.pointerEvents = 'none'; }
+                const postRef = doc(db, "posts", postId);
+                const postSnap = await getDoc(postRef);
+                if(postSnap.exists()) {
+                    const postData = postSnap.data();
+                    const updatedComments = postData.comments.filter(c => c.id !== commentId);
+                    await updateDoc(postRef, { comments: updatedComments });
+                }
+            });
+            return;
+        }
+
+        // --- EDIT POST REDIRECT ---
+        if (t.closest('.edit-post-btn')) {
+            const postId = t.closest('.edit-post-btn').getAttribute('data-id');
+            window.location.href = `create-post.html?edit=${postId}`;
             return;
         }
 
         // Delete Post
-        if (e.target.closest('.delete-post-btn')) {
-            const btn = e.target.closest('.delete-post-btn');
-            if(confirm("Are you sure you want to delete this pitch?")) {
-                await deleteDoc(doc(db, "posts", btn.getAttribute('data-id')));
+        if (t.closest('.delete-post-btn')) {
+            const postId = t.closest('.delete-post-btn').getAttribute('data-id');
+            showCustomConfirm("This pitch will be permanently deleted from the arena.", async () => {
+                await deleteDoc(doc(db, "posts", postId));
+                const postCard = t.closest('.card.post');
+                if(postCard) { postCard.classList.add('animate-fade-out'); setTimeout(() => postCard.remove(), 400); }
                 if(window.location.pathname.includes('post.html')) window.location.href = "index.html";
-            }
+            });
             return;
+        }
+
+        // Share Post
+        if (t.closest('.share-post-btn')) {
+            e.stopPropagation();
+            const id = t.closest('.share-post-btn').getAttribute('data-id');
+            const shareUrl = `${window.location.origin}/post.html?id=${id}`;
+            try {
+                if (navigator.share) await navigator.share({ title: 'Nerd Arena Pitch', url: shareUrl });
+                else { await navigator.clipboard.writeText(shareUrl); alert("Link copied!"); }
+            } catch (err) {}
+            document.querySelectorAll('.post-dropdown-menu').forEach(m => m.classList.remove('show'));
+            return;
+        }
+    });
+
+    document.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && e.target.id.startsWith('comment-input-')) {
+            e.preventDefault();
+            const postId = e.target.id.replace('comment-input-', '');
+            const submitBtn = document.querySelector(`.submit-comment-btn[data-id="${postId}"]`);
+            if(submitBtn) submitBtn.click();
         }
     });
 }
 
 // ============================================================================
-// PART 2: SINGLE POST PAGE LOGIC (Only runs if on post.html)
+// PART 5: PAGE-SPECIFIC INITIALIZATIONS (Single Post & Edit Mode)
 // ============================================================================
 
-document.addEventListener('userDataLoaded', () => {
-    const container = document.getElementById('single-post-container');
-    
-    // IF WE ARE NOT ON POST.HTML, EXIT EARLY! 
-    if (!container) return; 
-
+document.addEventListener('userDataLoaded', async () => {
+    initGlobalPostListeners(); 
     const urlParams = new URLSearchParams(window.location.search);
-    const targetPostId = urlParams.get('id');
 
-    if (!targetPostId) {
-        container.innerHTML = "<p style='text-align:center;'>Invalid post link.</p>";
-        return;
+    // 1. Check if we are in EDIT MODE on create-post.html
+    const editId = urlParams.get('edit');
+    const standaloneTextarea = document.getElementById('standalone-post-textarea');
+    const standaloneSubmit = document.getElementById('standalone-submit-post');
+    
+    if (editId && standaloneTextarea && standaloneSubmit) {
+        standaloneSubmit.innerText = "Save Changes";
+        standaloneSubmit.setAttribute('data-edit-id', editId);
+        
+        // Update the header visually if on create-post.html
+        const headerTitle = document.querySelector('.fb-header h3');
+        if (headerTitle) headerTitle.innerText = "Edit Pitch";
+
+        try {
+            const docSnap = await getDoc(doc(db, "posts", editId));
+            if (docSnap.exists() && docSnap.data().authorId === window.currentUserData.uid) {
+                standaloneTextarea.value = docSnap.data().content;
+                standaloneTextarea.dispatchEvent(new Event('input')); // Enable button
+            } else {
+                alert("You are not authorized to edit this post.");
+                window.location.href = "index.html";
+            }
+        } catch (e) { console.error(e); }
     }
 
-    initGlobalPostListeners(); // Attach standard listeners
-    
-    // Use onSnapshot to instantly update likes/comments without reloading
-    onSnapshot(doc(db, "posts", targetPostId), (docSnap) => {
-        if (!docSnap.exists()) {
-            container.innerHTML = "<p style='text-align:center; color:var(--text-muted); padding:40px;'>This pitch was deleted or does not exist.</p>";
-            return;
-        }
+    // 2. Check if we are on SINGLE POST PAGE (post.html)
+    const container = document.getElementById('single-post-container');
+    const targetPostId = urlParams.get('id');
 
-        const post = docSnap.data();
-        // Generate the HTML using the engine
-        container.innerHTML = createPostHTML(post, targetPostId, auth.currentUser.uid);
-        
-        // Resolve the author profile
-        renderDynamicAuthor(post.authorId, targetPostId);
-        
-        // Force comments section open on single post view
-        const commentSection = document.getElementById(`comments-${targetPostId}`);
-        if(commentSection) commentSection.style.display = 'block';
-    });
+    if (container && targetPostId) {
+        onSnapshot(doc(db, "posts", targetPostId), (docSnap) => {
+            if (!docSnap.exists()) {
+                container.innerHTML = "<p style='text-align:center; color:var(--text-muted); padding:40px;'>This pitch was deleted or does not exist.</p>";
+                return;
+            }
+            const post = docSnap.data();
+            container.innerHTML = createPostHTML(post, targetPostId, auth.currentUser.uid);
+            renderDynamicAuthor(post.authorId, targetPostId);
+            
+            const commentSection = document.getElementById(`comments-${targetPostId}`);
+            if(commentSection) commentSection.style.display = 'block';
+        });
+    } else if (container && !targetPostId) {
+        container.innerHTML = "<p style='text-align:center;'>Invalid post link.</p>";
+    }
 });
