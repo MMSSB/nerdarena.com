@@ -2209,7 +2209,7 @@ export function initGlobalPostListeners() {
         if (t.closest('.share-post-btn')) {
             e.stopPropagation();
             const id = t.closest('.share-post-btn').getAttribute('data-id');
-            const shareUrl = `${window.location.origin}/post.html?id=${id}`;
+            const shareUrl = `${window.location.origin}/nerdarena.com/post.html?id=${id}`;
             try {
                 if (navigator.share) await navigator.share({ title: 'Nerd Arena Pitch', url: shareUrl });
                 else { await navigator.clipboard.writeText(shareUrl); alert("Link copied!"); }
