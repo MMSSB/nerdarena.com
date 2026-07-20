@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full antialiased">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About — Nerd Arena</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --color-bg: #d7d7d0;
+      --color-fg: #1a1614;
+      --color-cream: #f4f4e7;
+      --color-border: rgba(26, 22, 20, 0.15);
+      --color-accent: #DE4E1A;
+      --font-serif: "Instrument Serif", Georgia, serif;
+      --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+      --font-mono: "JetBrains Mono", monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background-color: var(--color-bg); color: var(--color-fg); font-family: var(--font-sans); min-height: 100vh; }
+    a { color: inherit; text-decoration: none; }
+    ul { list-style: none; }
+
+    .text-heading { font-family: var(--font-serif); font-size: clamp(3rem, 6vw, 5rem); line-height: 0.95; font-weight: 400; letter-spacing: -0.02em; }
+    .text-subhead { font-family: var(--font-serif); font-size: clamp(2rem, 3.5vw, 3rem); line-height: 1.05; }
+    .text-body { font-size: 1.125rem; line-height: 1.6; }
+    .text-eyebrow { font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; }
+
+    .glass-surface {
+      background: rgba(232, 232, 232, 0.67);
+      backdrop-filter: blur(12px) saturate(180%) brightness(110%);
+      -webkit-backdrop-filter: blur(12px) saturate(180%) brightness(110%);
+      border-radius: 82px;
+      box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.08), 0 6px 24px rgba(0, 0, 0, 0.04);
+      border: 0.5px solid rgba(255, 255, 255, 0.6);
+      padding: 6px;
+    }
+
+    .dashed-box {
+      position: relative;
+      border: 1px dashed var(--color-border);
+      transition: background-color 0.2s;
+    }
+    .dashed-box:hover { background-color: rgba(255, 255, 255, 0.25); }
+
+    .corner-svg { position: absolute; pointer-events: none; line-height: 0; }
+    .corner-tl { top: -1px; left: -1px; }
+    .corner-tr { top: -1px; right: -1px; }
+    .corner-bl { bottom: -1px; left: -1px; }
+    .corner-br { bottom: -1px; right: -1px; }
+
+    nav {
+      position: sticky; top: 0; z-index: 50; padding: 30px;
+      display: flex; justify-content: space-between; align-items: center; pointer-events: none;
+    }
+    nav * { pointer-events: auto; }
+    .nav-links-list { display: flex; gap: 4px; align-items: center; }
+    .nav-link {
+      padding: 6px 14px; font-family: var(--font-mono); font-size: 0.8rem;
+      color: color-mix(in srgb, var(--color-fg) 60%, transparent);
+      transition: color 0.2s; border-radius: 99px;
+    }
+    .nav-link:hover { color: var(--color-fg); background: rgba(0,0,0,0.04); }
+    .nav-pill-center { position: absolute; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 10px; }
+
+    .btn-solid {
+      background: var(--color-fg); color: var(--color-cream); border-radius: 99px;
+      padding: 10px 20px; font-size: 0.85rem; font-weight: 500; transition: opacity 0.2s;
+      display: inline-flex; align-items: center; gap: 8px; cursor: pointer; border: none;
+    }
+    .btn-solid:hover { opacity: 0.86; }
+
+    .section { max-width: 1512px; margin: 0 auto; padding: 80px 120px; }
+    @media(max-width: 768px) { .section { padding: 60px 24px; } }
+    hr.section-rule { width: 100%; border: 0; border-top: 1px dashed var(--color-border); margin: 0; }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav>
+    <div class="glass-surface">
+      <ul class="nav-links-list">
+        <li><a href="index.html" class="nav-link">Home</a></li>
+        <li><a href="about.html" class="nav-link" style="color:var(--color-fg)">About</a></li>
+      </ul>
+    </div>
+
+    <div class="nav-pill-center">
+      <div class="glass-surface" style="display: flex; align-items: center; padding: 4px 14px; gap: 8px;">
+        <span style="font-family: var(--font-mono); font-weight: 600; font-size: 0.9rem;">NERD ARENA</span>
+      </div>
+    </div>
+
+    <div class="glass-surface">
+      <ul class="nav-links-list">
+        <li><a href="index.html#demo" class="btn-solid" style="padding: 6px 14px; font-size: 0.8rem;">Enter Arena</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- About Hero -->
+  <section class="section">
+    <div style="max-width: 800px; display: flex; flex-direction: column; gap: 24px;">
+      <div class="text-eyebrow" style="color: color-mix(in srgb, var(--color-fg) 60%, transparent);">01 &bull; Mission Statement</div>
+      <h1 class="text-heading">Engineered for autonomous operational dominance.</h1>
+      <p class="text-body" style="color: color-mix(in srgb, var(--color-fg) 70%, transparent);">
+        Software scale has eclipsed human operators. At Nerd Arena, we build the underlying world models and autonomous agent swarms required to run, protect, and harden production environments without manual friction.
+      </p>
+    </div>
+  </section>
+
+  <hr class="section-rule">
+
+  <!-- Core Pillars -->
+  <section class="section">
+    <div class="text-eyebrow" style="color: color-mix(in srgb, var(--color-fg) 60%, transparent); margin-bottom: 24px;">02 &bull; Core Pillars</div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px;">
+      
+      <div class="dashed-box" style="padding: 32px; display: flex; flex-direction: column; gap: 12px;">
+        <h3 class="text-subhead">Autonomous First</h3>
+        <p class="text-body" style="font-size: 0.95rem; color: color-mix(in srgb, var(--color-fg) 70%, transparent);">
+          Software shouldn't just alert humans; it should diagnose root causes, construct fixes, and verify safety bounds independently.
+        </p>
+        <span class="corner-svg corner-tl"><svg width="7" height="7" viewBox="0 0 10 10" fill="none"><path d="M 1.250 10.000 L 1.250 1.250 L 10.000 1.250" stroke="currentColor" stroke-width="1.5"/></svg></span>
+        <span class="corner-svg corner-tr"><svg width="7" height="7" viewBox="0 0 10 10" fill="none"><path d="M 0.000 1.250 L 8.750 1.250 L 8.750 10.000" stroke="currentColor" stroke-width="1.5"/></svg></span>
+        <span class="corner-svg corner-bl"><svg width="7" height="7" viewBox="0 0 10 10" fill="none"><path d="M 1.250 0.000 L 1.250 8.750 L 10.000 8.750" stroke="currentColor" stroke-width="1.5"/></svg></span>
+        <span class="corner-svg corner-br"><svg width="7" height="7" viewBox="0 0 10 10" fill="none"><path d="M 0.000 8.750 L 8.750 8.750 L 8.750 0.000" stroke="currentColor" stroke-width="1.5"/></svg></span>
+      </div>
+
+      <div class="dashed-box" style="padding: 32px; display: flex; flex-direction: column; gap: 12px;">
+        <h3 class="text-subhead">Live World Models</h3>
+        <p class="text-body" style="font-size: 0.95rem; color: color-mix(in srgb, var(--color-fg) 70%, transparent);">
+          Static runbooks are obsolete. Our agents maintain live topological graphs of your telemetry, Git repos, and active clusters.
+        </p>
+        <span class="corner-svg corner-tl"><svg width="7" height="7" viewBox="0 0 10 10" fill="none"><path d="M 1.250 10.000 L 1.250 1.250 L 10.000 1.250" stroke="currentColor" stroke-width="1.5"/></svg></span>
+        <span class="corner-svg corner-tr"><svg width="7" height="7" viewBox="0 0 10 10" fill="none"><path d="M 0.000 1.250 L 8.750 1.250 L 8.750 10.000" stroke="currentColor" stroke-width="1.5"/></svg></span>
+        <span class="corner-svg corner-bl"><svg width="7" height="7" viewBox="0 0 10 10" fill="none"><path d="M 1.250 0.000 L 1.250 8.750 L 10.000 8.750" stroke="currentColor" stroke-width="1.5"/></svg></span>
+        <span class="corner-svg corner-br"><svg width="7" height="7" viewBox="0 0 10 10" fill="none"><path d="M 0.000 8.750 L 8.750 8.750 L 8.750 0.000" stroke="currentColor" stroke-width="1.5"/></svg></span>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Footer link back -->
+  <footer style="padding: 30px; text-align: center;">
+    <a href="index.html" class="btn-solid">Return to Arena Home</a>
+  </footer>
+</body>
+</html>
