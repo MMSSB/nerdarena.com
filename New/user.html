@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Nerd Arena | View Dev</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <script src="theme.js"></script> 
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header class="top-header">
+        <a href="home.html"><div class="logo"><i class="ph-fill ph-code"></i> <span>Nerd Arena</span></div></a>
+
+        <div class="search-container">
+            <span class="search-icon">
+                <!-- <i class="ph ph-magnifying-glass"></i> -->
+            </span>
+            <input type="text" placeholder="Search ideas, tech stacks, or nerds...">
+        </div>
+        <div class="header-actions">
+            <button class="icon-btn show-mobile-only"><i class="ph ph-magnifying-glass"></i></button>
+            <button class="icon-btn hide-mobile"><i class="ri-message-3-line"></i></button>
+            <button class="icon-btn hide-mobile"><i class="ri-notification-3-line"></i></button>
+            <div class="user-profile dropdown-container" id="nav-user-container">
+                <div class="avatar-text bg-primary" id="nav-avatar">...</div>
+                <div class="dropdown-menu" id="nav-dropdown">
+                    <a href="profile.html"><i class="ri-user-line"></i> My Profile</a>
+                    <a href="settings-account.html"><i class="ri-settings-4-line"></i> Settings</a>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" id="logout-btn" class="text-danger"><i class="ri-logout-box-r-line"></i> Log Out</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="profile-scroll-wrapper">
+        <div class="profile-container">
+            
+            <section class="profile-hero animate-fade-in" style="animation-delay: 0.1s;">
+                <div class="cover-banner" style="background: linear-gradient(135deg, #1e1b4b, #312e81);">
+                    <div class="tech-grid-overlay"></div>
+                </div>
+                
+                <div class="hero-info-bar">
+                    <div class="avatar-wrapper">
+                        <div class="profile-avatar bg-blue">...</div>
+                    </div>
+                    
+                    <div class="user-meta-details">
+                        <div class="name-stats">
+                            <h2>Loading...</h2>
+                            <span class="user-stats"><i class="ph-bold ph-users-three"></i> ...</span>
+                        </div>
+                        <div class="profile-actions">
+                            <button id="follow-btn" class="btn-action btn-solid"><i class="ri-user-add-line"></i> Follow Nerd</button>
+                            <button class="btn-action btn-outline"><i class="ri-chat-3-line"></i> Collaborate</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <nav class="profile-tabs animate-fade-in" style="animation-delay: 0.2s;">
+                <button class="tab-item active">Posts</button>
+                <button class="tab-item">Network</button>
+                <button class="tab-item">Repositories</button>
+                <button class="tab-item">Architecture</button>
+                <button class="tab-item">Stack Blueprint</button>
+                
+            </nav>
+
+            <div class="profile-grid">
+                
+                <aside class="profile-sidebar animate-fade-in" style="animation-delay: 0.3s;">
+                    <div class="card widget-card">
+                        <h3><i class="ph-bold ph-gear"></i> Dev Blueprint</h3>
+                        <p id="dev-bio" style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 15px; line-height: 1.5;">
+                            Loading bio...
+                        </p>
+                        <div class="blueprint-actions">
+                            <button id="dev-github-btn" class="btn-blueprint" style="justify-content: center; display: none;"><i class="ri-github-fill"></i> View GitHub Profile</button>
+                        </div>
+                    </div>
+
+                    <div class="card widget-card">
+                        <div class="widget-header-link">
+                            <h3><i class="ph-bold ph-code-block"></i> Architecture Vault</h3>
+                            <a href="#" class="view-all-link">See all</a>
+                        </div>
+                        <div class="architecture-grid">
+                            <div class="arch-preview bg-purple"><i class="ri-database-2-line"></i><span>Redis Cache</span></div>
+                            <div class="arch-preview" style="background: #92400e; color: white; border: none;"><i class="ri-braces-line"></i><span>GraphQL</span></div>
+                            <div class="arch-preview bg-primary"><i class="ri-node-tree"></i><span>Microservices</span></div>
+                            <div class="arch-preview bg-blue"><i class="ri-cloud-line"></i><span>AWS</span></div>
+                        </div>
+                    </div>
+                </aside>
+
+                <section class="profile-feed animate-fade-in" style="animation-delay: 0.4s;">
+                    <div id="tab-pitches" class="profile-tab-content active">
+                        <div id="target-posts-container"></div>
+                    </div>
+                                        <div id="tab-network" class="profile-tab-content">
+                        <h3 style="margin-bottom: 15px; font-size: 1.1rem;"><i class="ri-group-line"></i> Backers (Followers)</h3>
+                        <div class="network-grid" id="network-container">
+                            </div>
+                    </div>
+<div id="tab-repositories" class="profile-tab-content">
+    <div id="target-repos-container"></div>
+</div>
+                    <div id="tab-architecture" class="profile-tab-content">
+                        <p style="color: var(--text-muted); text-align: center; padding: 40px;">Architecture vault coming soon...</p>
+                    </div>
+
+                    <!-- <div id="tab-repositories" class="profile-tab-content">
+                        <p style="color: var(--text-muted); text-align: center; padding: 40px;">Repositories integration coming soon...</p>
+                    </div> -->
+
+                    <div id="tab-stack" class="profile-tab-content">
+                        <p style="color: var(--text-muted); text-align: center; padding: 40px;">Stack Blueprint coming soon...</p>
+                    </div>
+
+
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <!-- <nav class="bottom-nav animate-fade-in" style="animation-delay: 0.2s;">
+        <a href="home.html"><i class="ph-fill ph-terminal-window"></i></a>
+        <a href="#"><i class="ph ph-magnifying-glass"></i></a>
+        <a href="home.html" class="nav-center-btn"><i class="ph-fill ph-plus"></i></a>
+        <a href="#"><i class="ri-notification-3-line"></i></a>
+        <a href="profile.html"><i class="ph ph-user"></i></a>
+    </nav> -->
+<div class="floating-dock-container">
+    <nav class="glass-pill">
+        <a href="home.html" class="nav-icon ">
+            <i class="ph-fill ph-terminal-window"></i>
+        </a>
+        
+        <a href="search.html" class="nav-icon">
+            <i class="ph ph-magnifying-glass"></i>
+        </a>
+        
+        <a href="#" class="nav-icon">
+            <div class="badge-dot"></div>
+            <i class="ph ph-bell"></i>
+        </a>
+        
+        <a href="profile.html" class="nav-icon">
+            <i class="ph ph-user"></i>
+        </a>
+    </nav>
+
+    <!-- <button class="action-sphere" onclick="document.querySelector('.create-post textarea').focus();">
+        <i class="ph ph-plus"></i>
+    </button> -->
+    <button class="action-sphere" id="post-norm">
+    <i class="ph ph-plus"></i>
+</button>
+<!-- <button class="action-sphere" id="post-modal">
+    <i class="ph ph-plus"></i>
+</button> -->
+</div>
+    <script type="module" src="gdrive.js"></script>
+    <script type="module" src="pload.js"></script>
+    <script type="module" src="user.js"></script>
+</body>
+</html>

@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>About | Nerd Arena</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <link rel="stylesheet" href="styles.css">
+    
+    <!-- Theme & Auth Scripts -->
+    <script src="ld.js"></script>
+    <script type="module" src="firebase.js"></script>
+    <script type="module" src="pload.js"></script>
+</head>
+<body style="background-color: var(--bg-gray);">
+
+    <nav class="navbar">
+        <div class="nav-left">
+            <i class="ph ph-list mobile-menu-btn" onclick="toggleMenu()"></i>
+
+            <a href="index.html" class="logo" style="text-decoration: none;">
+                <i class="ph-fill ph-code" style="font-size: 1.8rem;"></i> <span>Nerd Arena</span>
+            </a>
+            <div class="nav-links desktop-only">
+                <a href="index.html">Home</a>
+                <a href="about.html">About</a>
+                <a href="home.html">Feed</a>
+            </div>
+        </div>
+
+        <div class="nav-right">
+            <div class="nav-icons" style="display: flex; align-items: center; gap: 20px;">
+                
+                <!-- THEME DROPDOWN -->
+                <div class="dropdown-container desktop-only" id="theme-dropdown-container">
+                    <i class="ph-fill ph-palette" style="font-size: 1.5rem; cursor: pointer; transition: transform 0.2s ease;"></i>
+                    
+                    <div class="dropdown-menu" id="theme-dropdown" style="width: 180px; right: -50px;">
+                        <div class="dropdown-header">
+                            <strong>Appearance</strong>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <a href="#" onclick="setTheme('light'); return false;"><i class="ph-fill ph-sun"></i> Light Mode</a>
+                        <a href="#" onclick="setTheme('dark'); return false;"><i class="ph-fill ph-moon"></i> Dark Mode</a>
+                        <a href="#" onclick="setTheme('system'); return false;"><i class="ph-fill ph-monitor"></i> System Auto</a>
+                    </div>
+                </div>
+
+                <i class="ph ph-magnifying-glass" onclick="window.location.href='search.html'"></i>
+                <i class="fa-regular fa-bell"></i>
+                
+                <!-- PROFILE DROPDOWN -->
+                <div class="user-profile dropdown-container" id="nav-user-container">
+                    <div class="avatar-text bg-primary" id="nav-avatar">
+                         <i class="ri-user-line"></i>
+                    </div>
+                    <div class="dropdown-menu" id="nav-dropdown">
+                        <!-- Injected via pload.js based on auth state (Log In / Profile) -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MOBILE MENU -->
+    <div class="mobile-menu" id="mobileMenu">
+        <i class="ph ph-x close-menu" onclick="toggleMenu()"></i>
+        <a href="index.html">Home</a>
+        <a href="about.html">About</a>
+        <a href="home.html">Feed</a>
+        <a href="login.html" style="color: var(--meta-blue);">Log In</a>
+        <a href="signup.html" style="color: var(--meta-blue);">Join Arena</a>
+        
+        <div style="margin-top: 20px; display: flex; gap: 10px;">
+            <button class="theme-btn" onclick="setTheme('light')" style="background: var(--bg-gray);"><i class="ph-fill ph-sun"></i></button>
+            <button class="theme-btn" onclick="setTheme('dark')" style="background: var(--bg-gray);"><i class="ph-fill ph-moon"></i></button>
+            <button class="theme-btn" onclick="setTheme('system')" style="background: var(--bg-gray);"><i class="ph-fill ph-monitor"></i></button>
+        </div>
+    </div>
+
+    <main class="app-layout" style="display: block; max-width: 1200px; margin: 0 auto; padding-top: 40px;">
+        
+        <!-- Hero Section -->
+        <section class="about-hero" style="background: transparent; padding-top: 60px;">
+            <div class="about-hero-content">
+                <div class="hero-overline" style="color: var(--meta-blue); font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Where Ideas Reside</div>
+                <h1 class="hero-title" style="font-size: clamp(2.5rem, 5vw, 4rem); margin-bottom: 20px;">Built for Engineers.<br>Ready for Pitches.</h1>
+                <p class="hero-desc" style="font-size: 1.15rem; line-height: 1.7; max-width: 700px; margin: 0 auto;">
+                    Nerd Arena is a minimalist, text-first social networking environment. We stripped away the visual clutter and image feeds so anyone can pitch an app idea, draft a software architecture, or publish their project portfolio with absolute clarity.
+                </p>
+            </div>
+        </section>
+
+        <!-- The "Why" Section -->
+        <section class="white-section creator-section" style="border-radius: 24px; margin: 40px 24px; padding: 60px 40px; box-shadow: 0 4px 20px rgba(0,0,0,0.02);">
+            <div style="max-width: 900px; margin: 0 auto; text-align: center;">
+                <h2 class="section-title" style="margin-bottom: 20px;">Why Text-First?</h2>
+                <p style="font-size: 1.1rem; color: var(--text-secondary); line-height: 1.7; margin-bottom: 25px;">
+                    Modern social networks are built for endless scrolling. Nerd Arena is built for project validation. By explicitly removing image posting features, we ensure that every idea pitched on this platform relies entirely on the strength of its underlying logic and structural explanation. 
+                </p>
+                <blockquote style="font-size: 1.3rem; font-style: italic; font-weight: 600; color: var(--text-primary); border-left: 4px solid var(--meta-blue); padding-left: 24px; margin: 40px auto; max-width: 700px; text-align: left;">
+                    "If you can't explain your system architecture in plain text and a code block, you don't understand it well enough yet."
+                </blockquote>
+            </div>
+        </section>
+
+        <!-- Core Tech Discussions Grid -->
+        <section class="gray-section" style="padding: 60px 24px; background: transparent;">
+            <div class="hero-overline" style="text-align: center; color: var(--meta-blue); font-weight: 600; margin-bottom: 10px;">The Sandbox</div>
+            <h2 class="section-title" style="text-align: center; margin-bottom: 40px;">What Will You Pitch?</h2>
+            
+            <div class="grid-container" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px;">
+                
+                <div class="modern-card">
+                    <div class="card-icon-wrapper"><i class="ph-fill ph-lightbulb"></i></div>
+                    <h3>Startups & Ideas</h3>
+                    <p>Have an idea for a peer-to-peer utility or a social network? Pitch it to a network of developers who can help build it.</p>
+                </div>
+
+                <div class="modern-card">
+                    <div class="card-icon-wrapper"><i class="ph-fill ph-database"></i></div>
+                    <h3>Backend Architecture</h3>
+                    <p>Share your relational SQL schemas, database listeners, and complex Firebase Firestore configurations for code review.</p>
+                </div>
+
+                <div class="modern-card">
+                    <div class="card-icon-wrapper"><i class="ph-fill ph-cpu"></i></div>
+                    <h3>Offline AI & Agents</h3>
+                    <p>Pitch concepts for local AI deployments, customized Python automation tools, and LangChain RAG pipelines.</p>
+                </div>
+
+                <div class="modern-card">
+                    <div class="card-icon-wrapper"><i class="ph-fill ph-file-code"></i></div>
+                    <h3>Project Portfolios</h3>
+                    <p>Compile your GitHub repositories and document your native HTML/CSS implementations directly onto your timeline.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Call to Action -->
+        <section class="white-section" style="padding: 80px 24px; text-align: center; border-radius: 24px; margin: 0 24px 100px;">
+            <h2 class="section-title" style="margin-bottom: 20px;">Ready to Pitch Your Tech?</h2>
+            <p style="color: var(--text-secondary); max-width: 600px; margin: 0 auto 30px; font-size: 1.05rem;">
+                Join the arena today to save pitches, connect with other developers, and build your text-first technical portfolio.
+            </p>
+            <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                <button onclick="window.location.href='signup.html'" class="btn-schedule" style="background: var(--meta-blue); padding: 14px 30px; font-size: 1rem;">Create Account</button>
+                <button onclick="window.location.href='home.html'" class="btn-outline" style="padding: 14px 30px; font-size: 1rem;">Explore the Feed</button>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="modern-footer">
+        <div class="footer-grid">
+            <div class="footer-col">
+                <a href="index.html" class="logo" style="color: white; margin-bottom: 20px; display: inline-flex; text-decoration: none;">
+                    <i class="ph-fill ph-code" style="font-size: 1.8rem; margin-right: 8px;"></i> <span style="font-weight: 700;">Nerd Arena</span>
+                </a>
+                <p style="color: #a0aab2; line-height: 1.6; font-size: 0.9rem;">
+                    Empowering developers with a text-first, zero-distraction social networking environment for pitching ideas and building software portfolios.
+                </p>
+            </div>
+            <div class="footer-col">
+                <h4>Quick Links</h4>
+                <a href="index.html">Home</a>
+                <a href="about.html" style="color: var(--meta-blue);">About Us</a>
+                <a href="home.html">Global Feed</a>
+            </div>
+            <div class="footer-col">
+                <h4>Network</h4>
+                <p><i class="ph ph-terminal-window"></i> API Access</p>
+                <p><i class="ph ph-code-block"></i> Open Source</p>
+            </div>
+            <div class="footer-col">
+                <h4>Follow Us</h4>
+                <div class="footer-socials">
+                    <a href="#"><i class="fa-brands fa-github"></i></a>
+                    <a href="#"><i class="fa-brands fa-discord"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+            <p style="margin: 0;">&copy; 2026 Nerd Arena. All rights reserved.</p>
+            <p style="margin: 0; font-size: 0.8rem; color: #4a5c6a;">Designed & Developed by <strong>MMS</strong></p>
+        </div>
+    </footer>
+
+    <!-- Integrated Bottom Navigation for Mobile -->
+    <div class="shared-bottom-nav">
+        <a href="index.html"><i class="ri-home-5-line"></i><span>Home</span></a>
+        <a href="about.html" class="active"><i class="ri-information-line"></i><span>About</span></a>
+        <a href="home.html"><i class="ri-message-3-line"></i><span>Feed</span></a>
+        <a href="profile.html"><i class="ri-user-smile-line"></i><span>Profile</span></a>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

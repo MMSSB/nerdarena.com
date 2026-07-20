@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nerd Arena | Login</title>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="auth.css">
+        <!-- <script src="theme.js"></script> -->
+
+</head>
+<body>
+
+    <div class="auth-wrapper">
+        <div class="auth-form-section animate-fade-in">
+            <div class="auth-container">
+                <div class="auth-logo">
+                    <i class="ph-fill ph-code"></i> <span>Nerd Arena</span>
+                </div>
+                
+                <h1 class="auth-title">Welcome back</h1>
+                <p class="auth-subtitle">Enter your details to access your workspace.</p>
+
+                <div class="recent-login-wrapper" id="recent-login-container">
+                    <div class="recent-login-label">Recent Login</div>
+                    <div class="recent-login-card" id="recent-login-card">
+                        <div class="avatar-text" id="recent-login-avatar">...</div>
+                        <div class="recent-login-info">
+                            <span class="recent-login-name" id="recent-login-name">User</span>
+                            <span class="recent-login-sub">Click to fill username</span>
+                        </div>
+                    </div>
+                </div>
+
+                <form class="auth-form" id="login-form">
+                    <div class="input-group">
+                        <label>Username or E-mail</label>
+                        <input type="text" id="login-identifier" placeholder="tech_wizard42 or email@domain.com" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Password</label>
+                        <input type="password" id="login-password" placeholder="••••••••" required>
+                    </div>
+
+                    <p class="error-msg" id="login-error"></p>
+
+                    <button type="submit" class="btn-auth">Log in</button>
+                </form>
+
+                <div class="auth-links">
+                    Don't have an account? <a href="signup.html">Sign up</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="auth-image-section animate-fade-in" style="animation-delay: 0.2s;">
+            <div class="auth-image-content">
+                <h2>Welcome Back</h2>
+                <p>Your ideas and architectures are waiting. Let's get back to building.</p>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="auth.js"></script>
+</body>
+</html>

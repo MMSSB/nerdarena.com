@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Nerd Arena | Create Pitch</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+        <script type="module" src="gdrive.js"></script>
+    <script type="module" src="pload.js"></script>
+    <script type="module" src="post.js"></script>
+    
+    <script src="theme.js"></script> 
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        /* Hide the default global navigation for this specific page */
+        .top-header, .floating-dock-container { display: none !important; }
+        
+        /* Full-screen Native App Layout */
+        body { 
+            background: var(--card-bg); 
+            height: 100vh; 
+            height: 100dvh; /* Mobile viewport fix */
+            display: flex; 
+            flex-direction: column; 
+            overflow: hidden;
+        }
+
+        /* Top Header Area */
+        .fb-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px 20px; border-bottom: 1px solid var(--border-color);
+            background: var(--card-bg); flex-shrink: 0;
+        }
+        
+        .fb-header h3 { font-size: 1.1rem; color: var(--text-main); font-weight: 700; margin: 0; }
+        
+        .close-btn { 
+            font-size: 1.6rem; color: var(--text-muted); cursor: pointer; 
+            background: none; border: none; padding: 5px; margin-left: -5px;
+            transition: 0.2s;
+        }
+        .close-btn:hover { color: #dc2626; transform: scale(1.1); }
+
+        .fb-post-btn {
+            background: var(--primary-color); color: white; border: none;
+            padding: 8px 18px; border-radius: 20px; font-weight: 700; 
+            font-size: 0.95rem; cursor: pointer; transition: var(--transition);
+        }
+        .fb-post-btn:disabled { 
+            background: var(--border-color); color: var(--text-muted); 
+            cursor: not-allowed; opacity: 0.7;
+        }
+        .fb-post-btn:not(:disabled):hover { background: var(--primary-hover); transform: translateY(-2px); }
+
+        /* Scrollable Body Area */
+        .fb-body { 
+            padding: 20px; display: flex; flex-direction: column; 
+            flex: 1; overflow-y: auto; padding-bottom: 80px; 
+        }
+
+        .fb-user-row { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; }
+        .fb-user-info { display: flex; flex-direction: column; }
+        .fb-user-info strong { color: var(--text-main); font-size: 1.05rem; }
+        .fb-badge { 
+            background: rgba(99,102,241,0.1); color: var(--primary-color); 
+            font-size: 0.75rem; padding: 3px 8px; border-radius: 6px; 
+            font-weight: 700; display: inline-block; margin-top: 4px; width: fit-content; 
+        }
+
+        /* Large Text Area */
+        .fb-textarea {
+            flex: 1; width: 100%; border: none; outline: none; background: transparent;
+            font-size: 1.3rem; color: var(--text-main); resize: none; font-family: inherit;
+            line-height: 1.5; min-height: 200px;
+        }
+        .fb-textarea::placeholder { color: var(--text-muted); font-size: 1.3rem; font-weight: 400; }
+
+        /* Bottom Toolbar (Sticks above keyboard) */
+        .fb-toolbar {
+            display: flex; gap: 20px; padding: 15px 24px; border-top: 1px solid var(--border-color);
+            background: var(--card-bg); position: fixed; bottom: 0; left: 0; width: 100%;
+            padding-bottom: max(15px, env(safe-area-inset-bottom));
+            box-shadow: 0 -4px 15px rgba(0,0,0,0.02);
+            z-index: 1000;
+        }
+        .fb-toolbar span { 
+            font-size: 1.6rem; color: var(--text-muted); cursor: pointer; 
+            transition: var(--transition); display: flex; align-items: center; gap: 8px;
+        }
+        .fb-toolbar span:hover { color: var(--primary-color); transform: translateY(-3px); }
+    </style>
+</head>
+<body>
+
+    <header class="fb-header animate-fade-in">
+        <button class="close-btn" onclick="window.history.back()"><i class="ri-close-line"></i></button>
+        <h3>Create Pitch</h3>
+        <button class="fb-post-btn" id="standalone-submit-post" disabled>Post</button>
+    </header>
+
+    <main class="fb-body animate-fade-in">
+        <div class="fb-user-row">
+            <div class="avatar-text bg-primary" id="draft-avatar">...</div>
+            <div class="fb-user-info">
+                <strong id="draft-name">Loading Profile...</strong>
+                <span class="fb-badge"><i class="ph-fill ph-rocket"></i> Dev</span>
+            </div>
+        </div>
+        
+        <textarea id="standalone-post-textarea" class="fb-textarea" placeholder="What do you want to build?" autofocus></textarea>
+    </main>
+
+    <div class="fb-toolbar animate-fade-in">
+    <span title="Load Link Preview" class="preview-trigger-btn markdown-btn"><i class="ph ph-link"></i></span> 
+
+        <span onclick="insertFormat('code')" title="Add Code Snippet"><i class="ph ph-code-block"></i></span> 
+        <span onclick="insertFormat('bold')" title="Format Bold"><i class="ph ph-text-b"></i></span> 
+    </div>
+
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const textarea = document.getElementById('standalone-post-textarea');
+            const submitBtn = document.getElementById('standalone-submit-post');
+
+            // 1. Enable/Disable Post Button based on text input
+            textarea.addEventListener('input', () => {
+                if (textarea.value.trim().length > 0) {
+                    submitBtn.disabled = false;
+                } else {
+                    submitBtn.disabled = true;
+                }
+            });
+
+            // Auto-focus on load
+            setTimeout(() => textarea.focus(), 300);
+        });
+
+        // 2. Populate User Profile Data instantly when loaded
+        document.addEventListener('userDataLoaded', () => {
+            const user = window.currentUserData;
+            if (user) {
+                document.getElementById('draft-name').innerText = user.fullname;
+                
+                const avatar = document.getElementById('draft-avatar');
+                if (user.avatarClass && user.avatarClass.includes('url(')) {
+                    avatar.style.background = user.avatarClass;
+                    avatar.style.backgroundSize = 'cover';
+                    avatar.style.backgroundPosition = 'center';
+                    avatar.innerText = '';
+                } else {
+                    avatar.className = `avatar-text ${user.avatarClass || 'bg-primary'}`;
+                    avatar.innerText = user.fullname.substring(0, 2).toUpperCase();
+                }
+            }
+        });
+
+        // 3. Bulletproof Markdown Injector
+        function insertFormat(type) {
+            const textarea = document.getElementById('standalone-post-textarea');
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const val = textarea.value;
+            
+            let injection = '';
+            
+            if (type === 'code') {
+                injection = "\n```\n// Paste your code here\n```\n";
+            } else if (type === 'bold') {
+                injection = "**Bold Text**";
+            }
+
+            // Inject text at cursor position
+            textarea.value = val.substring(0, start) + injection + val.substring(end);
+            
+            // Move cursor to the end of the injected text and focus
+            textarea.selectionStart = textarea.selectionEnd = start + injection.length;
+            textarea.focus();
+            
+            // Trigger input event to enable the "Post" button
+            textarea.dispatchEvent(new Event('input'));
+        }
+    </script>
+</body>
+</html>

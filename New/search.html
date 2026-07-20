@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Arena | Nerd Arena</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+        <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <script src="theme.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header class="top-header">
+        <a href="home.html"><div class="logo"><i class="ph-fill ph-code"></i> <span>Nerd Arena</span></div></a>
+        <div class="search-container">
+            <!-- <span class="search-icon"><i class="ph ph-magnifying-glass"></i></span> -->
+            <input type="text" placeholder="Search ideas, tech stacks, or nerds...">
+        </div>
+        <div class="header-actions">
+            <button class="icon-btn show-mobile-only"><i class="ph ph-magnifying-glass"></i></button>
+            <div class="user-profile dropdown-container" id="nav-user-container">
+                <div class="avatar-text bg-primary" id="nav-avatar">...</div>
+                <div class="dropdown-menu" id="nav-dropdown">
+                    <a href="profile.html"><i class="ri-user-line"></i> My Profile</a>
+                    <a href="home.html"><i class="ri-home-line"></i> Home</a>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" id="logout-btn" class="text-danger"><i class="ri-logout-box-r-line"></i> Log Out</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="profile-scroll-wrapper">
+        <div class="profile-container" style="max-width: 800px;">
+            
+            <!-- <div class="card animate-fade-in" style="padding: 15px; margin-bottom: 20px;">
+                <div style="display: flex; gap: 10px;">
+                    <div style="flex: 1; position: relative;">
+                        <i class="ri-search-line" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 1.2rem;"></i>
+                        <input type="text" id="page-search-input" placeholder="Search ideas, nerds, or stacks..." style="width: 100%; padding: 14px 20px 14px 45px; border-radius: 12px; border: 2px solid var(--border-color); background: var(--bg-color); color: var(--text-main); font-size: 1rem; outline: none; transition: 0.2s;" onfocus="this.style.borderColor='var(--primary-color)'" onblur="this.style.borderColor='var(--border-color)'">
+                    </div>
+                    <button id="page-search-btn" style="background: var(--primary-color); color: white; border: none; padding: 0 20px; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.2s; font-size: 0.95rem;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'"><i class="ph ph-magnifying-glass"></i></button>
+                </div>
+            </div> -->
+
+            <h3 class="animate-fade-in" style="margin-bottom: 15px; font-size: 1rem; color: var(--text-muted);">Results for <span id="search-query-display" style="color: var(--text-main); font-weight: 700;">"..."</span></h3>
+            
+            <div class="search-tabs animate-fade-in" style="animation-delay: 0.1s;">
+                <div class="search-tab active" id="tab-btn-posts" onclick="switchSearchTab('posts')"><i class="ri-terminal-box-line"></i> Pitches & Ideas</div>
+                <div class="search-tab" id="tab-btn-people" onclick="switchSearchTab('people')"><i class="ri-user-smile-line"></i> Nerds (People)</div>
+            </div>
+
+            <div id="search-results-posts" class="tab-content active" style="padding:0;">
+                <div style="text-align:center; padding: 40px; color: var(--text-muted);"><i class="ri-loader-4-line ri-spin" style="font-size: 2rem;"></i></div>
+            </div>
+
+            <div id="search-results-people" class="tab-content" style="padding:0;">
+                <div class="network-grid" id="people-grid-container"></div>
+            </div>
+
+        </div>
+    </main>
+
+    <script type="module" src="gdrive.js"></script>
+    <script type="module" src="pload.js"></script>
+    <script type="module" src="search.js"></script>
+    
+    <script>
+        function switchSearchTab(tab) {
+            document.getElementById('tab-btn-posts').classList.remove('active');
+            document.getElementById('tab-btn-people').classList.remove('active');
+            document.getElementById('search-results-posts').classList.remove('active');
+            document.getElementById('search-results-people').classList.remove('active');
+            
+            document.getElementById(`tab-btn-${tab}`).classList.add('active');
+            document.getElementById(`search-results-${tab}`).classList.add('active');
+        }
+    </script>
+</body>
+</html>
